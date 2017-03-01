@@ -1,0 +1,3 @@
+pytest==3.0.3
+pydot-ng==1.0.0
+graphviz==0.5.2

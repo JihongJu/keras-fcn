@@ -5,10 +5,13 @@ from __future__ import (
     unicode_literals
 )
 import six
+import numpy as np
 from keras.models import Model
 from keras.layers import (
     Input,
+    Dense,
     Dropout,
+    Flatten,
     Lambda,
     merge
 )
@@ -16,9 +19,13 @@ from keras.layers.convolutional import (
     Convolution2D,
     MaxPooling2D,
     Deconvolution2D,
-    ZeroPadding2D
+    ZeroPadding2D,
+    Cropping2D
 )
 from keras import backend as K
+
+
+DEBUG = 0
 
 
 def _deconv(**deconv_params):
@@ -29,27 +36,65 @@ def _deconv(**deconv_params):
         nb_row = deconv_params["nb_row"]
         nb_col = deconv_params["nb_col"]
         subsample = deconv_params.setdefault("subsample", (2, 2))
-        border_mode = deconv_params.setdefault("border_mode", "same")
+        border_mode = deconv_params.setdefault("border_mode", "valid")
+        bias = deconv_params.setdefault("bias", False)
         name = deconv_params.setdefault("name", "deconv")
         width = input._keras_shape[ROW_AXIS]
         height = input._keras_shape[COL_AXIS]
-        if K.image_dim_ordering() == 'tf':
-            output_shape = (None, width, height, nb_filter)
+        if border_mode == 'valid':
+            # No zero padding, non-unit strides, transposed input-output
+            # shape relationship
+            output_width, output_height = tuple(
+                np.array(subsample) * (np.array([width, height]) - 1)
+                + np.array([nb_row, nb_col]))
+        elif border_mode == 'same':
+            # TODO Half (same) zero padding, non-unit strides, transposed
+            # input-output shape relationship
+            output_width, output_height = tuple(
+                np.array(subsample) * np.array([width, height]))
         else:
-            output_shape = (None, nb_filter, width, height)
+            assert "border_mode for _deconv layers should be valid or same"
+        if K.image_dim_ordering() == 'tf':
+            output_shape = (None, output_width, output_height, nb_filter)
+        else:
+            output_shape = (None, nb_filter, 2 * width, 2 * height)
         deconv = Deconvolution2D(nb_filter=nb_filter, nb_row=nb_row,
                                  nb_col=nb_col, output_shape=output_shape,
-                                 border_mode=border_mode, bias=False,
-                                 subsample=subsample, activation='linear',
-                                 name=name)(input)
+                                 border_mode=border_mode, bias=bias,
+                                 subsample=subsample, name=name)(input)
+
         return deconv
+
+    return f
+
+
+def _crop_and_merge(target_layer, offset_row, offset_col, merge_mode=None,
+                    name='crop_and_merge'):
+    """Crop the uncropped bottom such that it can be merged to a target_layer
+    with mode `sum`
+    """
+    def f(input):
+        width = input._keras_shape[ROW_AXIS]
+        height = input._keras_shape[COL_AXIS]
+        target_width = target_layer._keras_shape[ROW_AXIS]
+        target_height = target_layer._keras_shape[COL_AXIS]
+        cropped = Cropping2D(cropping=((offset_row,
+                                        width - offset_row - target_width),
+                                       (offset_col,
+                                        height - offset_row - target_height)),
+                             name='{}c'.format(name))(input)
+        if merge_mode is None:
+            return cropped
+        else:
+            return merge([cropped, target_layer], mode=merge_mode,
+                         name='fuse_{}'.format(name))
 
     return f
 
 
 def vgg8(skip=True):
     """VGG8 as basenet
-        # Arguments
+    # Arguments
         skip: boolean if including the skip architecture of FCN.
     # Returns
         pool1: (only when skip==True) layer with output_shape = input_shape / 2
@@ -72,9 +117,10 @@ def vgg16(skip=True):
         drop7: layer with output_shape = input_shape / 32
     """
     def f(input):
+        pad1 = ZeroPadding2D(padding=(100, 100))(input)
         conv1_1 = Convolution2D(64, 3, 3, activation='relu',
-                                border_mode='same',
-                                name='conv1_1')(input)
+                                border_mode='valid',
+                                name='conv1_1')(pad1)
         conv1_2 = Convolution2D(64, 3, 3, activation='relu',
                                 border_mode='same', name='conv1_2')(conv1_1)
         pool1 = MaxPooling2D((2, 2), strides=(2, 2),
@@ -85,7 +131,7 @@ def vgg16(skip=True):
                                 name='conv2_1')(pool1)
         conv2_2 = Convolution2D(128, 3, 3, activation='relu',
                                 border_mode='same', name='conv2_2')(conv2_1)
-        pool2 = MaxPooling2D((2, 2), strides=(2, 2),
+        pool2 = MaxPooling2D((2, 2), strides=(2, 2), border_mode='same',
                              name='block2_pool')(conv2_2)
         # Block 3
         conv3_1 = Convolution2D(256, 3, 3, activation='relu',
@@ -94,7 +140,7 @@ def vgg16(skip=True):
                                 border_mode='same', name='conv3_2')(conv3_1)
         conv3_3 = Convolution2D(256, 3, 3, activation='relu',
                                 border_mode='same', name='conv3_3')(conv3_2)
-        pool3 = MaxPooling2D((2, 2), strides=(2, 2),
+        pool3 = MaxPooling2D((2, 2), strides=(2, 2), border_mode='same',
                              name='block3_pool')(conv3_3)
         # Block 4
         conv4_1 = Convolution2D(512, 3, 3, activation='relu',
@@ -103,7 +149,7 @@ def vgg16(skip=True):
                                 border_mode='same', name='conv4_2')(conv4_1)
         conv4_3 = Convolution2D(512, 3, 3, activation='relu',
                                 border_mode='same', name='conv4_3')(conv4_2)
-        pool4 = MaxPooling2D((2, 2), strides=(2, 2),
+        pool4 = MaxPooling2D((2, 2), strides=(2, 2), border_mode='same',
                              name='block4_pool')(conv4_3)
         # Block 5
         conv5_1 = Convolution2D(512, 3, 3, activation='relu',
@@ -112,19 +158,22 @@ def vgg16(skip=True):
                                 border_mode='same', name='conv5_2')(conv5_1)
         conv5_3 = Convolution2D(512, 3, 3, activation='relu',
                                 border_mode='same', name='conv5_3')(conv5_2)
-        pool5 = MaxPooling2D((2, 2), strides=(2, 2),
+        pool5 = MaxPooling2D((2, 2), strides=(2, 2), border_mode='same',
                              name='block5_pool')(conv5_3)
         # fully conv
-        fc6 = Convolution2D(4096, 7, 7, activation='relu',
-                            border_mode='same', name='fc6')(pool5)
-        drop6 = Dropout(0.5)(fc6)
-        fc7 = Convolution2D(4096, 1, 1, activation='relu',
-                            border_mode='valid', name='fc7')(drop6)
-        drop7 = Dropout(0.5)(fc7)
-
         if skip:
+            fc6 = Convolution2D(4096, 7, 7, activation='relu',
+                                border_mode='valid', name='fc6')(pool5)
+            drop6 = Dropout(0.5)(fc6)
+            fc7 = Convolution2D(4096, 1, 1, activation='relu',
+                                border_mode='valid', name='fc7')(drop6)
+            drop7 = Dropout(0.5)(fc7)
             return (pool3, pool4, drop7)
+        # classification
         else:
+            pool5f = Flatten(name='pool5f')(pool5)
+            fc6 = Dense(4096, activation='relu', name='fc6')(pool5f)
+            fc7 = Dense(4096, activation='relu', name='fc7')(fc6)
             return drop7
 
     return f
@@ -171,56 +220,45 @@ def FCN(basenet='vgg16', weights=None, num_output=21,
     basenet = _get_basenet(basenet)
     # input
     input = Input(shape=input_shape)
-    # the base net: VGG16
+    # Get pool3, pool4 and drop7 from the base net: VGG16
     pool3, pool4, drop7 = basenet(skip=True)(input)
 
     score_fr = Convolution2D(num_output, 1, 1, activation='linear',
                              border_mode='valid', name='score_fr')(drop7)
-    _, score_fr_dim_row, score_fr_dim_col, _ = score_fr.shape
-    upscore2_output_shape = (None,
-                             2 * int(score_fr_dim_row),
-                             2 * int(score_fr_dim_col),
-                             num_output)
-    upscore2 = Deconvolution2D(num_output, 4, 4,
-                               output_shape=upscore2_output_shape,
-                               subsample=(2, 2), activation='linear',
-                               border_mode='same', bias=False,
-                               name='upscore2')(score_fr)
+    upscore2 = _deconv(nb_filter=num_output, nb_row=4, nb_col=4,
+                       subsample=(2, 2), border_mode='valid',
+                       name='upscore2')(score_fr)
     # scale pool4 skip for compatibility
     scale_pool4 = Lambda(lambda x: x * 0.01, name='scale_pool4')(pool4)
     score_pool4 = Convolution2D(num_output, 1, 1, activation='linear',
                                 border_mode='valid',
                                 name='score_pool4')(scale_pool4)
-    fuse_pool4 = merge([upscore2, score_pool4], mode='sum', name='fuse_pool4')
-    _, fuse_pool4_dim_row, fuse_pool4_dim_col, _ = fuse_pool4.shape
-    upscore_pool4_output_shape = (None,
-                                  2 * int(fuse_pool4_dim_row),
-                                  2 * int(fuse_pool4_dim_col),
-                                  num_output)
-    upscore_pool4 = Deconvolution2D(num_output, 4, 4,
-                                    output_shape=upscore_pool4_output_shape,
-                                    subsample=(2, 2), activation='linear',
-                                    border_mode='same', bias=False,
-                                    name='upscore_pool4')(fuse_pool4)
+    fuse_pool4 = _crop_and_merge(upscore2, offset_row=5, offset_col=5,
+                                 merge_mode='sum',
+                                 name='score_pool4')(score_pool4)
+    upscore_pool4 = _deconv(nb_filter=num_output, nb_row=4, nb_col=4,
+                            subsample=(2, 2), border_mode='valid',
+                            name='upscore_pool4')(fuse_pool4)
     # scale pool3 skip for compatibility
     scale_pool3 = Lambda(lambda x: x * 0.0001, name='scale_pool3')(pool3)
     score_pool3 = Convolution2D(num_output, 1, 1, activation='linear',
                                 border_mode='valid',
                                 name='score_pool3')(scale_pool3)
-    fuse_pool3 = merge([upscore_pool4, score_pool3], mode='sum',
-                       name='fuse_pool3')
+    fuse_pool3 = _crop_and_merge(upscore_pool4, offset_row=9, offset_col=9,
+                                 merge_mode='sum',
+                                 name='score_pool3')(score_pool3)
     # score
-    _, input_dim_row, input_dim_col, _ = input.shape
-    score_output_shape = (None,
-                          int(input_dim_row),
-                          int(input_dim_col),
-                          num_output)
-    score = Deconvolution2D(num_output, 16, 16,
-                            output_shape=score_output_shape,
-                            subsample=(8, 8), activation='linear',
-                            border_mode='same', bias=False,
-                            name='score')(fuse_pool3)
-
+    upscore8 = _deconv(nb_filter=num_output, nb_row=16, nb_col=16,
+                       subsample=(8, 8), border_mode='valid',
+                       name='upscore8')(fuse_pool3)
+    score = _crop_and_merge(input, offset_row=31, offset_col=31,
+                            merge_mode=None,
+                            name='score')(upscore8)
+    # model
     model = Model(input, score, name='fcn8s')
+    if DEBUG:
+        for l in model.layers:
+            print("Layers output shape of the model:")
+            print("{} has shape: {}".format(l.name, l.output_shape))
 
     return model

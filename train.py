@@ -1,7 +1,7 @@
 import numpy as np
-from fcn import FCN8s
+from fcn import FCN
 
-fcn8s = FCN8s(input_shape=(224, 224, 3), num_output=21)
+fcn8s = FCN(basenet='vgg16', input_shape=(224, 224, 3), num_output=21)
 fcn8s.compile(optimizer='rmsprop',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
