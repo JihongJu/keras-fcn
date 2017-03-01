@@ -13,7 +13,7 @@ First clone the repository:
 git clone https://github.com/JihongJu/keras-fcn.git
 ```
 
-Start bash in a docker image and mount the repository to `/workspace`
+Start bash in a docker image and mount the local repository to `/workspace`
 ```
 $ nvidia-docker run -it --rm -v `pwd`/keras-fcn/:/workspace jihong/nvidia-keras bash
 ```
@@ -30,8 +30,7 @@ Validate installation by by starting a train process
 Import FCN8s model and compile
 
 ```
-from fcn import FCN8s
-fcn8s = FCN8s(num_output=21, input_shape=(128, 128, 3))
+fcn8s = FCN(basenet='vgg16', input_shape=(224, 224, 3), num_output=21)
 fcn8s.compile(optimizer='rmsprop',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
