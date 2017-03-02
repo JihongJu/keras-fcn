@@ -10,15 +10,22 @@ The following installation procedures assumes Nvidia driver, [docker](https://do
 First clone the repository:
 
 ```
-git clone https://github.com/JihongJu/keras-fcn.git
+$ git clone https://github.com/JihongJu/keras-fcn.git
 ```
 
 Start bash in a docker image and mount the local repository to `/workspace`
+
 ```
 $ nvidia-docker run -it --rm -v `pwd`/keras-fcn/:/workspace jihong/nvidia-keras bash
 ```
 
-Validate installation by by starting a train process
+Install requirements
+
+```
+# pip install -r requirements.txt
+```
+
+Validate installation by by starting an example train process
 
 ```
 /workspace# python train.py
