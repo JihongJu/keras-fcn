@@ -29,3 +29,10 @@ def test_FCN8s():
     fcn8s = FCN(input_shape=input_shape)
     _, h, w, c = fcn8s.output_shape
     assert (h, w, c) == (32, 32, 21)
+
+
+def vis_FCN8s():
+    input_shape = (500, 500, 3)
+    fcn8s = FCN(input_shape=input_shape)
+    _, h, w, c = fcn8s.output_shape
+    plot(fcn8s, to_file='fcn8s.png')
