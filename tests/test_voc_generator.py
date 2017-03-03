@@ -28,6 +28,8 @@ def segmentation_data_loader():
         image_format='png',
         color_mode='grayscale',
         target_size=(500, 500),
+        categorical=True,
+        nb_classes=21,
         save_to_dir='tests',
         save_prefix='resized_segmentation_'
     )
@@ -43,4 +45,3 @@ def test_flow_from_imageset(voc_data_gen, image_data_loader,
         batch_size=1)
     batch_x, batch_y = train_generator.next()
     print(batch_x.shape, batch_y.shape)
-    assert False

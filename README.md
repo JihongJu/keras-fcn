@@ -106,6 +106,21 @@ fcn8s.compile(optimizer='rmsprop',
               metrics=['accuracy'])
 fcn8s.fit_generator(train_generator,
                     samples_per_epoch=2223,
-                    nb_epoch=10000,
+                    nb_epoch=100,
                     validation_generator=test_generator)
+fcn8s.save('voc_fcn8s.h5')
 ```
+
+### Model Architecture
+
+FCN8s with VGG16 as base net:
+
+![fcn8s](fcn8s.png)
+
+
+### TODO
+
+ - load pre-trained weights
+ - mean IU as validation metrics
+ - predict & test scripts
+ - dicom image data generator
