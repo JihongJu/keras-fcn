@@ -1,4 +1,4 @@
-"""Copy-paste from https://github.com/fchollet/keras/blob/master/.travis.yml"""
+# Copy-paste from https://github.com/fchollet/keras/blob/master/.travis.yml
 sudo: required
 dist: trusty
 language: python
