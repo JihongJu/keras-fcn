@@ -11,8 +11,10 @@ from voc2011.score import (
 def test_voc_scores():
     y_true = to_categorical(np.array([[0, 2, 0], [0, 2, 0], [0, 2, 0]]),
                             3).reshape(3, 3, 3)
+    y_true = y_true[np.newaxis, ...]
     y_pred = to_categorical(np.array([[0, 2, 2], [0, 2, 2], [0, 2, 2]]),
                             3).reshape(3, 3, 3)
+    y_pred = y_pred[np.newaxis, ...]
     acc = accuracy(y_true, y_pred)
     assert abs(acc - 2/float(3)) < 1e-8
     avgacc = mean_accuracy(y_true, y_pred)
@@ -23,8 +25,10 @@ def test_voc_scores():
     assert abs(fwavacc - 0.5) < 1e-8
     y_true = to_categorical(np.array([[1, 2, 0], [0, 2, 1], [2, 2, 0]]),
                             3).reshape(3, 3, 3)
+    y_true = y_true[np.newaxis, ...]
     y_pred = to_categorical(np.array([[1, 2, 0], [0, 2, 1], [2, 2, 0]]),
                             3).reshape(3, 3, 3)
+    y_pred = y_pred[np.newaxis, ...]
     acc = accuracy(y_true, y_pred)
     assert abs(acc - 1) < 1e-8
     avgacc = mean_accuracy(y_true, y_pred)

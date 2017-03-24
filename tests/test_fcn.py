@@ -1,5 +1,6 @@
 import pytest
 from fcn import FCN
+from keras import backend as K
 
 
 @pytest.fixture
@@ -12,9 +13,27 @@ def is_same_shape():
     return f
 
 
-def test_fcn_vgg16(is_same_shape):
+@pytest.fixture
+def fcn_test():
+    def f(input_shape):
+        if K.image_data_format() == 'channels_first':
+            input_shape = (input_shape[2], input_shape[0], input_shape[1])
+        model = FCN(input_shape=input_shape)
+        return model
+    return f
+
+
+def test_fcn_vgg16_compile(fcn_test, is_same_shape):
+    for data_format in {'channels_first', 'channels_last'}:
+        K.set_image_data_format(data_format)
+        fcn_vgg16 = fcn_test(input_shape=(500, 500, 3))
+        fcn_vgg16.compile(loss='categorical_crossentropy', optimizer='sgd')
+        assert True, "Failded to compile with {}".format(K.image_data_format())
+
+
+def test_fcn_vgg16_shape(fcn_test, is_same_shape):
     input_shape = (500, 500, 3)
-    fcn_vgg16 = FCN(input_shape=input_shape)
+    fcn_vgg16 = fcn_test(input_shape=input_shape)
     for l in fcn_vgg16.layers:
         test_shape = (None, None)
         if l.name == 'pool1':
@@ -40,18 +59,10 @@ def test_fcn_vgg16(is_same_shape):
         assert is_same_shape(test_shape, l.output_shape)
     assert is_same_shape((500, 500, 21), fcn_vgg16.output_shape)
 
-    input_shape = (250, 250, 3)
-    fcn_vgg16 = FCN(input_shape=input_shape)
-    assert is_same_shape((250, 250, 21), fcn_vgg16.output_shape)
-
     input_shape = (1366, 768, 3)
-    fcn_vgg16 = FCN(input_shape=input_shape)
+    fcn_vgg16 = fcn_test(input_shape=input_shape)
     assert is_same_shape((1366, 768, 21), fcn_vgg16.output_shape)
 
     input_shape = (224, 224, 3)
-    fcn_vgg16 = FCN(input_shape=input_shape)
+    fcn_vgg16 = fcn_test(input_shape=input_shape)
     assert is_same_shape((224, 224, 21), fcn_vgg16.output_shape)
-
-    input_shape = (112, 112, 3)
-    fcn_vgg16 = FCN(input_shape=input_shape)
-    assert is_same_shape((112, 112, 21), fcn_vgg16.output_shape)

@@ -23,23 +23,21 @@ def compute_error_matrix(y_true, y_pred):
     """
     # Find channel axis given backend
     if K.image_data_format() == 'channels_last':
-        ax_chn = -1
+        ax_chn = 3
     else:
-        ax_chn = 0
-
+        ax_chn = 1
     classes = y_true.shape[ax_chn]
     confusion = np.zeros((classes, classes))
-    for y_t, y_p in zip(y_true, y_pred):
-        confusion += get_confusion(y_p.argmax(ax_chn).flatten(),
-                                   y_t.argmax(ax_chn).flatten(),
-                                   classes)
+    confusion += get_confusion(y_true.argmax(ax_chn).flatten(),
+                               y_pred.argmax(ax_chn).flatten(),
+                               classes)
     return confusion
 
 
 def accuracy(y_true, y_pred):
     confusion = compute_error_matrix(y_true, y_pred)
     # per-class accuracy
-    acc = np.diag(confusion).sum() / confusion.sum()
+    acc = np.diag(confusion).sum() / float(confusion.sum())
     return acc
 
 
@@ -60,7 +58,7 @@ def mean_IU(y_true, y_pred):
 
 def freq_weighted_IU(y_true, y_pred):
     confusion = compute_error_matrix(y_true, y_pred)
-    freq = confusion.sum(1) / confusion.sum()
+    freq = confusion.sum(1) / float(confusion.sum())
     # per-class IU
     iu = np.diag(confusion) / (confusion.sum(1) + confusion.sum(0)
                                - np.diag(confusion))

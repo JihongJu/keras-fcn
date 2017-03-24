@@ -4,9 +4,10 @@ from __future__ import (
     print_function,
     unicode_literals
 )
+import re
 import abc
 import six
-import numpy as np
+from os.path import expanduser
 from keras.models import Model
 from keras.layers import (
     Input,
@@ -134,14 +135,13 @@ def _get_basenet(identifier):
     return identifier
 
 
-def _handle_dim_ordering():
-    """A dim_ordering handler by @raghakot.
-    (See https://github.com/raghakot/keras-resnet/blob/master/resnet.py)
+def _handle_data_format():
+    """Image data format handler
     """
     global ROW_AXIS
     global COL_AXIS
     global CHANNEL_AXIS
-    if K.image_dim_ordering() == 'tf':
+    if K.image_data_format() == 'channels_last':
         ROW_AXIS = 1
         COL_AXIS = 2
         CHANNEL_AXIS = 3
@@ -157,12 +157,11 @@ def FCN(basenet='vgg16', weights=None, num_output=21,
     # Arguments
         weights: pre-trained models
         num_output: number of classes
-        input_shape: input image shape (Support only 32, 64, 128, ... for
-        now)
+        input_shape: input image shape
     # Returns
         A Keras model instance
     """
-    _handle_dim_ordering()
+    _handle_data_format()
     basenet = _get_basenet(basenet)
     # input
     input = Input(shape=input_shape)
@@ -171,9 +170,11 @@ def FCN(basenet='vgg16', weights=None, num_output=21,
 
     drop7 = skip_layers[0]
     score_fr = Conv2D(filters=num_output, kernel_size=(1, 1),
-                      padding='valid', name='score_fr')(drop7)
+                      padding='valid',
+                      name='score_fr')(drop7)
     upscore2 = Conv2DTranspose(filters=num_output, kernel_size=(4, 4),
                                strides=(2, 2), padding='valid', use_bias=False,
+                               data_format=K.image_data_format(),
                                name='upscore2')(score_fr)
     # scale pool4 skip for compatibility
     pool4 = skip_layers[1]
@@ -186,6 +187,7 @@ def FCN(basenet='vgg16', weights=None, num_output=21,
     upscore_pool4 = Conv2DTranspose(filters=num_output, kernel_size=(4, 4),
                                     strides=(2, 2), padding='valid',
                                     use_bias=False,
+                                    data_format=K.image_data_format(),
                                     name='upscore_pool4')(fuse_pool4)
     # scale pool3 skip for compatibility
     pool3 = skip_layers[2]
@@ -199,6 +201,7 @@ def FCN(basenet='vgg16', weights=None, num_output=21,
     upscore8 = Conv2DTranspose(filters=num_output, kernel_size=(16, 16),
                                strides=(8, 8), padding='valid',
                                use_bias=False,
+                               data_format=K.image_data_format(),
                                name='upscore8')(fuse_pool3)
     score = _crop(input, offset=(31, 31), name='score')(upscore8)
 
