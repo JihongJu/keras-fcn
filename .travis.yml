@@ -1,8 +1,6 @@
 # Copy-paste from https://github.com/fchollet/keras/blob/master/.travis.yml
 sudo: required
 dist: trusty
-env:
-  - CODECOV_TOKEN: b9a51456-4944-41f7-a0f9-c29458339adf
 language: python
 matrix:
     include:
