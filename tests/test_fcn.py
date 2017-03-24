@@ -1,5 +1,5 @@
 import pytest
-from fcn import FCN
+from fcn import FCN, BaseNet, _get_basenet
 from keras import backend as K
 
 
@@ -15,10 +15,10 @@ def is_same_shape():
 
 @pytest.fixture
 def fcn_test():
-    def f(input_shape):
+    def f(input_shape, **kwargs):
         if K.image_data_format() == 'channels_first':
             input_shape = (input_shape[2], input_shape[0], input_shape[1])
-        model = FCN(input_shape=input_shape)
+        model = FCN(input_shape=input_shape, **kwargs)
         return model
     return f
 
@@ -66,3 +66,23 @@ def test_fcn_vgg16_shape(fcn_test, is_same_shape):
     input_shape = (224, 224, 3)
     fcn_vgg16 = fcn_test(input_shape=input_shape)
     assert is_same_shape((224, 224, 21), fcn_vgg16.output_shape)
+
+
+def test_get_basenet(fcn_test):
+    input_shape = (500, 500, 3)
+    with pytest.raises(ValueError):
+        fcn_vgg16 = fcn_test(input_shape, basenet='vgg')
+    with pytest.raises(ValueError):
+        fcn_vgg16 = fcn_test(input_shape, basenet=16)
+
+
+@pytest.fixture
+def basenet_test():
+    def f():
+        basenet_test = BaseNet()
+        return basenet_test
+    return f
+
+
+def test_basenet(basenet_test):
+    assert basenet_test()(3) == [3]

@@ -1,6 +1,8 @@
 # Copy-paste from https://github.com/fchollet/keras/blob/master/.travis.yml
 sudo: required
 dist: trusty
+env:
+  - CODECOV_TOKEN: b9a51456-4944-41f7-a0f9-c29458339adf
 language: python
 matrix:
     include:
@@ -48,7 +50,7 @@ install:
   - pip install keras
 
   # install test tools
-  - pip install pytest-cov python-coveralls pytest-xdist coverage==3.7.1 
+  - pip install -r requirements.txt
 
 # command to run tests
 script:
@@ -59,6 +61,6 @@ script:
   # set up keras backend
   - sed -i -e 's/"backend":[[:space:]]*"[^"]*/"backend":\ "'$KERAS_BACKEND'/g' ~/.keras/keras.json;
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
-  - KERAS_BACKEND=$KERAS_BACKEND PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --ignore=tests/test_voc_generator.py;
+  - KERAS_BACKEND=$KERAS_BACKEND PYTHONPATH=$PWD:$PYTHONPATH py.test tests/test_fcn.py --cov=fcn;
 after_success:
-  - coveralls
+  - bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN}

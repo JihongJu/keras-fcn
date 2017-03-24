@@ -132,7 +132,8 @@ def _get_basenet(identifier):
         if not basenet:
             raise ValueError('Invalid {}'.format(identifier))
         return basenet
-    return identifier
+    else:
+        raise ValueError('Invalid {}. A string expected.'.format(identifier))
 
 
 def _handle_data_format():
