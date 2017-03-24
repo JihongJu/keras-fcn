@@ -44,6 +44,12 @@ install:
   # install TensorFlow
   - pip install tensorflow
 
+  # intall keras
+  - pip install keras
+
+  # install test tools
+  - pip install pytest-cov python-coveralls pytest-xdist coverage==3.7.1 
+
 # command to run tests
 script:
   # run keras backend init to initialize backend config
