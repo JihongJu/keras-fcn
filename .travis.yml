@@ -57,6 +57,6 @@ script:
   # set up keras backend
   - sed -i -e 's/"backend":[[:space:]]*"[^"]*/"backend":\ "'$KERAS_BACKEND'/g' ~/.keras/keras.json;
   - echo -e "Running tests with the following config:\n$(cat ~/.keras/keras.json)"
-    PYTHONPATH=../$PWD:$PYTHONPATH py.test tests/;
+  - PYTHONPATH=$PWD:$PYTHONPATH py.test tests/ --ignore=tests/test_voc_generator.py;
 after_success:
   - coveralls
