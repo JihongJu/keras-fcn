@@ -1,47 +1,42 @@
 import pytest
-from voc_generator import ImageSegmentationGenerator, ImageDataLoader
+from voc2011.voc_generator import PascalVocGenerator, ImageSetLoader
+
+
+import yaml
+with open("tests/init_args.yml", 'r') as stream:
+    try:
+        init_args = yaml.load(stream)
+    except yaml.YAMLError as exc:
+        print(exc)
 
 
 @pytest.fixture
-def voc_data_gen():
-    voc_datagen = ImageSegmentationGenerator()
+def is_same_shape():
+    def f(shape_a, shape_b):
+        for dim in shape_a:
+            if dim and dim not in shape_b:
+                return False
+        return True
+    return f
+
+
+@pytest.fixture
+def voc_datagen():
+    voc_datagen = PascalVocGenerator(**init_args['pascal_voc_generator'][
+        'train'])
     return voc_datagen
 
 
 @pytest.fixture
-def image_data_loader():
-    data_load_args = dict(
-        image_dir='data/VOC2011/JPEGImages',
-        image_format='jpg',
-        color_mode='rgb',
-        target_size=(500, 500),
-        save_to_dir='tests',
-        save_prefix='resized_image_'
-    )
-    return ImageDataLoader(**data_load_args)
+def voc_loader():
+    return ImageSetLoader(**init_args['image_set_loader']['train'])
 
 
-@pytest.fixture
-def segmentation_data_loader():
-    data_load_args = dict(
-        image_dir='data/VOC2011/SegmentationClass',
-        image_format='png',
-        color_mode='grayscale',
-        target_size=(500, 500),
-        categorical=True,
-        nb_classes=21,
-        save_to_dir='tests',
-        save_prefix='resized_segmentation_'
-    )
-    return ImageDataLoader(**data_load_args)
-
-
-def test_flow_from_imageset(voc_data_gen, image_data_loader,
-                            segmentation_data_loader):
-    train_generator = voc_data_gen.flow_from_imageset(
-        image_set='data/VOC2011/ImageSets/Segmentation/trainval.txt',
-        image_data_loader=image_data_loader,
-        segmentation_data_loader=segmentation_data_loader,
-        batch_size=1)
-    batch_x, batch_y = train_generator.next()
-    print(batch_x.shape, batch_y.shape)
+def test_flow_from_imageset(voc_datagen, voc_loader, is_same_shape):
+    flow_args = init_args['pascal_voc_generator']['flow_from_imageset']
+    flow_args['image_set_loader'] = voc_loader
+    for _ in range(2):
+        train_generator = voc_datagen.flow_from_imageset(**flow_args)
+        batch_x, batch_y = train_generator.next()
+        assert is_same_shape((500, 500, 3), batch_x.shape)
+        assert is_same_shape((500, 500, 21), batch_y.shape)

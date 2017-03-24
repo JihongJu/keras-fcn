@@ -16,12 +16,12 @@ $ git clone https://github.com/JihongJu/keras-fcn.git
 Start bash in a docker image and mount the local repository to `/workspace`
 
 ```
-$ nvidia-docker run -it --rm -v `pwd`/keras-fcn/:/workspace jihong/nvidia-keras bash
+$ nvidia-docker run -it --rm -v `pwd`/keras-fcn/:/root/workspace jihong/keras-gpu bash
 ```
 
 Install requirements
 
-```
+```bash
 # pip install -r requirements.txt
 ```
 
@@ -45,15 +45,6 @@ fcn8s.compile(optimizer='rmsprop',
 
 #### Prepare the train set
 
-Create a pseudo dataset :
-
-```python
-import numpy as np
-X_train = np.random.rand(10, 128, 128, 3)
-labels = np.random.randint(0, 21, size=[10, 128, 128])
-y_train = np.eye(21)[labels]
-```
-Or alternatively use a real dataset, e.g. PASCAL VOC2011:
 
 ```python
 from voc_generator import ImageSegmentationGenerator, ImageDataLoader
@@ -115,7 +106,7 @@ fcn8s.save('voc_fcn8s.h5')
 
 FCN8s with VGG16 as base net:
 
-![fcn8s](fcn8s.png)
+![fcn_vgg16](fcn_vgg16.png)
 
 
 ### TODO
