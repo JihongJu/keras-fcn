@@ -28,9 +28,9 @@ pascal_voc_generator:
     shuffle: True
 image_set_loader:
   train:
-    image_set: data/VOCdevkit/VOC2011/ImageSets/Segmentation/train.txt
-    image_dir: data/VOCdevkit/VOC2011/JPEGImages/
-    label_dir: data/VOCdevkit/VOC2011/SegmentationClass
+    image_set: data/VOC2011/ImageSets/Segmentation/train.txt
+    image_dir: data/VOC2011/JPEGImages/
+    label_dir: data/VOC2011/SegmentationClass
     target_size:
       - 500
       - 500
@@ -41,9 +41,9 @@ image_set_loader:
     save_prefix: 'jpg'
     save_to_dir: 'tests/voc2011'
   val:
-    image_set: data/VOCdevkit/VOC2011/ImageSets/Segmentation/val.txt
-    image_dir: data/VOCdevkit/VOC2011/JPEGImages/
-    label_dir: data/VOCdevkit/VOC2011/SegmentationClass
+    image_set: data/VOC2011/ImageSets/Segmentation/val.txt
+    image_dir: data/VOC2011/JPEGImages/
+    label_dir: data/VOC2011/SegmentationClass
     target_size:
       - 500
       - 500

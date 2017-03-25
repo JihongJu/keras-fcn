@@ -1,8 +1,8 @@
 import datetime
 import numpy as np
+from functools import partial
 from fcn import FCN
 from voc_generator import PascalVocGenerator, ImageSetLoader
-from score import accuracy, mean_accuracy, mean_IU, freq_weighted_IU
 from keras.callbacks import (
     ReduceLROnPlateau,
     CSVLogger,
@@ -39,9 +39,7 @@ val_loader = ImageSetLoader(**init_args['image_set_loader']['val'])
 fcn_vgg16 = FCN(basenet='vgg16', input_shape=(500, 500, 3), num_output=21)
 fcn_vgg16.compile(optimizer='rmsprop',
                   loss='categorical_crossentropy',
-                  metrics=['accuracy', 'categorical_accuracy',
-                           accuracy, mean_accuracy,
-                           mean_IU, freq_weighted_IU])
+                  metrics=['accuracy', 'categorical_accuracy'])
 
 flow_args = init_args['pascal_voc_generator']['flow_from_imageset']
 train_flow_args = flow_args.copy()
