@@ -1,5 +1,5 @@
 import pytest
-from fcn import FCN, BaseNet, _get_basenet
+from fcn.fcn import FCN, BaseNet, _get_basenet
 from keras import backend as K
 
 

@@ -1,6 +1,6 @@
 import datetime
 import numpy as np
-from fcn import FCN
+from fcn.fcn import FCN
 from voc_generator import PascalVocGenerator, ImageSetLoader
 from score import accuracy, mean_accuracy, mean_IU, freq_weighted_IU
 from keras.callbacks import (
