@@ -1,56 +1,36 @@
 # keras-fcn
 
-[![Build Status](https://travis-ci.org/JihongJu/keras-fcn.svg?branch=master)](https://travis-ci.org/JihongJu/keras-fcn)
-
-[![codecov](https://codecov.io/gh/jihongju/keras-fcn/branch/master/graph/badge.svg)](https://codecov.io/gh/jihongju/keras-fcn)
+[![Build Status](https://travis-ci.org/JihongJu/keras-fcn.svg?branch=master)](https://travis-ci.org/JihongJu/keras-fcn) [![codecov](https://codecov.io/gh/jihongju/keras-fcn/branch/master/graph/badge.svg)](https://codecov.io/gh/jihongju/keras-fcn)
 
 A re-implementation of Fully Convolutional Networks with Keras
 
 ### Installation
 
-This implementation is based on Keras and the GPU version of Tensorflow/Theano. It is highly recommended to use [Docker container](https://www.docker.com/), to run the training process.
+#### Dependencies
 
-0. Dependencies
+[keras](https://keras.io/#installation), [tensorflow](https://www.tensorflow.org/install/)/[theano](http://deeplearning.net/software/theano/install.html) and their corresponding dependencies.
 
-The following installation procedures assumes Nvidia driver, [docker](https://docs.docker.com/engine/installation/linux/ubuntu/) and [nvidia-docker](https://devblogs.nvidia.com/parallelforall/nvidia-docker-gpu-server-application-deployment-made-easy/) are properly installed on an Ubuntu system.
 
-1. Clone the repository:
+#### Install with `pip`
 
+```bash
+$ pip install git+https://github.com/JihongJu/keras-fcn.git
 ```
+
+
+#### Build from source
+
+```bash
 $ git clone https://github.com/JihongJu/keras-fcn.git
+$ cd keras-fcn
+$ python setup.py build
 ```
-
-2. Start bash in a docker image and mount the local repository to `/workspace`
-
-```bash
-$ nvidia-docker run -it --rm -v `pwd`/keras-fcn/:/root/workspace jihong/keras-gpu bash
-```
-
-3. Install requirements in the container
-
-```bash
-~# cd workspace
-~/workspace# virtualenv --system-site-packages venv
-~/workspace# source venv/bin/activate
-~/workspace# pip install -r requirements.txt
-```
-
-Validate installation.
-
-```
-~/workspace# py.test tests/test_fcn.py
-```
-
-4. Quit container
-
-`Ctrl+D` will do the job.
-
 
 ### Usage
 
-Import FCN8s model and compile
+Import the FCN8s model and compile
 
-```
+```python
 from fcn import FCN
 fcn_vgg16 = FCN(basenet='vgg16', input_shape=(500, 500, 3), num_output=21)
 fcn_vgg16.compile(optimizer='rmsprop',
@@ -59,9 +39,9 @@ fcn_vgg16.compile(optimizer='rmsprop',
 fcn_vgg16.fit(X_train, y_train, batch_size=1)
 ```
 
-More details see [Train Pascal VOC2011](https://github.com/JihongJu/keras-fcn/blob/develop/voc2011/train.py)
+More details see [Training Pascal VOC2011 Segmention](https://github.com/JihongJu/keras-fcn/blob/develop/voc2011/train.py)
 
-#### Prepare data
+#### Try Examples
 
 1. Download [VOC2011](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/) dataset
 
@@ -82,19 +62,21 @@ $ nvidia-docker run -it --rm -v `pwd`:/root/workspace -v ${Home}/Datasets/:/root
 
 or equivalently,
 ```bash
-$ ./docker_bash.sh
+$ make bash
 ```
 
-#### Train
-
-Train with VOC2011
+3. Within the container, run the following codes.
 
 ```bash
-~# cd workspace/voc2011
-~/workspace/voc2011# python train.py
+$ cd ~/workspace
+$ source venv/bin/activate
+$ pip install -r requirements
+$ pip setup.py build
+$ cd voc2011
+$ python train.py
 ```
 
-More details in `jihong/keras-fcn/voc2011`
+More details see source code of the example in `jihong/keras-fcn/voc2011`.
 
 
 ### Model Architecture

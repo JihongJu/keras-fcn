@@ -37,9 +37,6 @@ image_set_loader:
     image_format: 'jpg'
     color_mode: 'rgb'
     label_format: 'png'
-    save_to_dir: True
-    save_prefix: 'jpg'
-    save_to_dir: 'tests/voc2011'
   val:
     image_set: data/VOC2011/ImageSets/Segmentation/val.txt
     image_dir: data/VOC2011/JPEGImages/
@@ -50,6 +47,3 @@ image_set_loader:
     image_format: 'jpg'
     color_mode: 'rgb'
     label_format: 'png'
-    save_to_dir: True
-    save_prefix: 'png'
-    save_to_dir: 'tests/voc2011'

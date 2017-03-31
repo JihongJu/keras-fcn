@@ -1,6 +1,5 @@
 import datetime
 import numpy as np
-from functools import partial
 from fcn import FCN
 from voc_generator import PascalVocGenerator, ImageSetLoader
 from keras.callbacks import (

@@ -1,13 +1,12 @@
+"""Fully Convolutional Neural Networks."""
 from __future__ import (
     absolute_import,
     division,
     print_function,
     unicode_literals
 )
-import re
 import abc
 import six
-from os.path import expanduser
 from keras.models import Model
 from keras.layers import (
     Input,
@@ -30,7 +29,6 @@ DEBUG = 0
 
 def _crop(target_layer, offset=(None, None), name=None):
     """Crop the bottom such that it has the same shape as target_layer."""
-
     def f(input):
         width = input._keras_shape[ROW_AXIS]
         height = input._keras_shape[COL_AXIS]
@@ -46,16 +44,19 @@ def _crop(target_layer, offset=(None, None), name=None):
 
 
 class BaseNet(object):
-    """BaseNet for FCN.
-    """
+    """Abstract BaseNet for FCN."""
+
     def __new__(cls, *args, **kwargs):
+        """New method."""
         return super(BaseNet, cls).__new__(cls).__call__(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
+        """Call method."""
         return self._build.__func__
 
     @abc.abstractmethod
     def _build(input):
+        """Build method."""
         """Build the basenet on top of input.
 
         Arguments:
@@ -68,9 +69,11 @@ class BaseNet(object):
 
 class VGG16(BaseNet):
     """VGG base net.
+
     Examples:
         skip_layers = VGG16()(Input(shape=(26, 26, 3)))
     """
+
     def _build(input):
         pad1 = ZeroPadding2D(padding=(100, 100))(input)
         conv1_1 = Conv2D(filters=64, kernel_size=(3, 3), activation='relu',
@@ -127,6 +130,7 @@ class VGG16(BaseNet):
 
 
 def _get_basenet(identifier):
+    """Get basenet by identifier."""
     if isinstance(identifier, six.string_types):
         basenet = globals().get(identifier.upper())
         if not basenet:
@@ -137,8 +141,7 @@ def _get_basenet(identifier):
 
 
 def _handle_data_format():
-    """Image data format handler
-    """
+    """Image data format handler."""
     global ROW_AXIS
     global COL_AXIS
     global CHANNEL_AXIS
@@ -152,11 +155,12 @@ def _handle_data_format():
         COL_AXIS = 3
 
 
-def FCN(basenet='vgg16', weights=None, num_output=21,
+def FCN(basenet='vgg16', num_output=21,
         input_shape=(None, None, 3)):
-    """Instantiate the FCN8s architecture with keras
+    """Instantiate the FCN8s architecture with keras.
+
     # Arguments
-        weights: pre-trained models
+        basenet: type of basene {'vgg16'}
         num_output: number of classes
         input_shape: input image shape
     # Returns
