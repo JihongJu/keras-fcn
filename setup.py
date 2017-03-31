@@ -9,5 +9,5 @@ setup(
     author_email="daniel.jihong.ju@gmail.com",
     description=("A reimplemtenation of fully convolutional networks"),
     packages=['fcn'],
-    install_requires=['keras']
+    install_requires=['keras>=2.0.0']
     )
