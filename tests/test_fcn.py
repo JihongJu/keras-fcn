@@ -1,10 +1,13 @@
+"""Test fcn."""
+
 import pytest
-from fcn.fcn import FCN, BaseNet, _get_basenet
+from fcn import FCN, BaseNet
 from keras import backend as K
 
 
 @pytest.fixture
 def is_same_shape():
+    """Test helper."""
     def f(shape_a, shape_b):
         for dim in shape_a:
             if dim and dim not in shape_b:
@@ -15,6 +18,7 @@ def is_same_shape():
 
 @pytest.fixture
 def fcn_test():
+    """FCN test fixture."""
     def f(input_shape, **kwargs):
         if K.image_data_format() == 'channels_first':
             input_shape = (input_shape[2], input_shape[0], input_shape[1])
@@ -24,6 +28,7 @@ def fcn_test():
 
 
 def test_fcn_vgg16_compile(fcn_test, is_same_shape):
+    """Test compile."""
     for data_format in {'channels_first', 'channels_last'}:
         K.set_image_data_format(data_format)
         fcn_vgg16 = fcn_test(input_shape=(500, 500, 3))
@@ -32,6 +37,7 @@ def test_fcn_vgg16_compile(fcn_test, is_same_shape):
 
 
 def test_fcn_vgg16_shape(fcn_test, is_same_shape):
+    """Test output shape."""
     input_shape = (500, 500, 3)
     fcn_vgg16 = fcn_test(input_shape=input_shape)
     for l in fcn_vgg16.layers:
@@ -69,15 +75,17 @@ def test_fcn_vgg16_shape(fcn_test, is_same_shape):
 
 
 def test_get_basenet(fcn_test):
+    """Test null basenet."""
     input_shape = (500, 500, 3)
     with pytest.raises(ValueError):
-        fcn_vgg16 = fcn_test(input_shape, basenet='vgg')
+        fcn_test(input_shape, basenet='vgg')
     with pytest.raises(ValueError):
-        fcn_vgg16 = fcn_test(input_shape, basenet=16)
+        fcn_test(input_shape, basenet=16)
 
 
 @pytest.fixture
 def basenet_test():
+    """Abstract basenet fixture."""
     def f():
         basenet_test = BaseNet()
         return basenet_test
@@ -85,4 +93,5 @@ def basenet_test():
 
 
 def test_basenet(basenet_test):
+    """Test Abstract BaseNet."""
     assert basenet_test()(3) == [3]
