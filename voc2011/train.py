@@ -1,6 +1,6 @@
 import datetime
 import numpy as np
-from fcn.fcn import FCN
+from fcn import FCN
 from voc_generator import PascalVocGenerator, ImageSetLoader
 from keras.callbacks import (
     ReduceLROnPlateau,

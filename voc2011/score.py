@@ -3,16 +3,14 @@ import keras.backend as K
 
 
 def get_confusion(a, b, n):
-    """Compute the confusion matrix given two vectors and number of classes
-    """
+    """Compute the confusion matrix given two vectors and number of classes."""
     k = (a >= 0) & (a < n)
     return np.bincount(n * a[k].astype(int) + b[k],
                        minlength=n**2).reshape(n, n)
 
 
 def compute_error_matrix(y_true, y_pred):
-    print(y_true, y_pred)
-    """ Compute Confusion matrix (a.k.a. error matrix)
+    """ Compute Confusion matrix (a.k.a. error matrix).
     a       predicted
     c       0   1   2
     t  0 [[ 5,  3,  0],
