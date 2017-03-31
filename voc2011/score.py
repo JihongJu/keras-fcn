@@ -11,6 +11,7 @@ def get_confusion(a, b, n):
 
 
 def compute_error_matrix(y_true, y_pred):
+    print(y_true, y_pred)
     """ Compute Confusion matrix (a.k.a. error matrix)
     a       predicted
     c       0   1   2
@@ -27,10 +28,9 @@ def compute_error_matrix(y_true, y_pred):
     else:
         ax_chn = 1
     classes = y_true.shape[ax_chn]
-    confusion = np.zeros((classes, classes))
-    confusion += get_confusion(y_true.argmax(ax_chn).flatten(),
-                               y_pred.argmax(ax_chn).flatten(),
-                               classes)
+    confusion = get_confusion(K.argmax(y_true, axis=ax_chn).flatten(),
+                              K.argmax(y_pred, axis=ax_chn).flatten(),
+                              classes)
     return confusion
 
 
