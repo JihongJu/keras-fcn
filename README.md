@@ -35,13 +35,13 @@ $ nvidia-docker run -it --rm -v `pwd`/keras-fcn/:/root/workspace jihong/keras-gp
 ~/workspace# pip install -r requirements.txt
 ```
 
-Validate installation.
+4. Validate installation.
 
 ```
 ~/workspace# py.test tests/test_fcn.py
 ```
 
-4. Quit container
+5. Quit container
 
 `Ctrl+D` will do the job.
 
@@ -90,7 +90,9 @@ $ ./docker_bash.sh
 Train with VOC2011
 
 ```bash
-~# cd workspace/voc2011
+~# cd workspace
+~/workspace# source venv/bin/activate
+~.workspace# cd voc2011
 ~/workspace/voc2011# python train.py
 ```
 
