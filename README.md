@@ -1,6 +1,6 @@
 # keras-fcn
 
-[![Build Status](https://travis-ci.org/JihongJu/keras-fcn.svg?branch=master)](https://travis-ci.org/JihongJu/keras-fcn) [![codecov](https://codecov.io/gh/jihongju/keras-fcn/branch/master/graph/badge.svg)](https://codecov.io/gh/jihongju/keras-fcn)
+[![Build Status](https://travis-ci.org/JihongJu/keras-fcn.svg?branch=master)](https://travis-ci.org/JihongJu/keras-fcn) [![codecov](https://codecov.io/gh/jihongju/keras-fcn/branch/master/graph/badge.svg)](https://codecov.io/gh/jihongju/keras-fcn)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A re-implementation of Fully Convolutional Networks with Keras
 
