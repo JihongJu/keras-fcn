@@ -1,3 +1,4 @@
+"""Deprecated score metrics."""
 import numpy as np
 import keras.backend as K
 
@@ -10,7 +11,8 @@ def get_confusion(a, b, n):
 
 
 def compute_error_matrix(y_true, y_pred):
-    """ Compute Confusion matrix (a.k.a. error matrix).
+    """Compute Confusion matrix (a.k.a. error matrix).
+
     a       predicted
     c       0   1   2
     t  0 [[ 5,  3,  0],
@@ -33,6 +35,7 @@ def compute_error_matrix(y_true, y_pred):
 
 
 def accuracy(y_true, y_pred):
+    """Compute accuracy."""
     confusion = compute_error_matrix(y_true, y_pred)
     # per-class accuracy
     acc = np.diag(confusion).sum() / float(confusion.sum())
@@ -40,6 +43,7 @@ def accuracy(y_true, y_pred):
 
 
 def mean_accuracy(y_true, y_pred):
+    """Compute mean accuracy."""
     confusion = compute_error_matrix(y_true, y_pred)
     # per-class accuracy
     acc = np.diag(confusion) / confusion.sum(1)
@@ -47,6 +51,7 @@ def mean_accuracy(y_true, y_pred):
 
 
 def mean_IU(y_true, y_pred):
+    """Compute mean IoU."""
     confusion = compute_error_matrix(y_true, y_pred)
     # per-class IU
     iu = np.diag(confusion) / (confusion.sum(1) + confusion.sum(0)
@@ -55,6 +60,7 @@ def mean_IU(y_true, y_pred):
 
 
 def freq_weighted_IU(y_true, y_pred):
+    """Compute frequent weighted IoU."""
     confusion = compute_error_matrix(y_true, y_pred)
     freq = confusion.sum(1) / float(confusion.sum())
     # per-class IU

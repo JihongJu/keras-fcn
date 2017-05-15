@@ -47,3 +47,13 @@ image_set_loader:
     image_format: 'jpg'
     color_mode: 'rgb'
     label_format: 'png'
+  test:
+    image_set: ../data/VOC2011/ImageSets/Segmentation/test.txt
+    image_dir: ../data/VOC2011/JPEGImages/
+    label_dir: ../data/VOC2011/SegmentationClass
+    target_size:
+      - 500
+      - 500
+    image_format: 'jpg'
+    color_mode: 'rgb'
+    label_format: 'png'

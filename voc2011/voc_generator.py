@@ -1,3 +1,4 @@
+"""Pascal VOC Segmenttion Generator."""
 import os
 import numpy as np
 from keras import backend as K
@@ -12,8 +13,7 @@ from keras.preprocessing.image import (
 
 
 class PascalVocGenerator(ImageDataGenerator):
-    """A real-time data augmentation generator for PASCAL VOC2011
-    Segmentation."""
+    """A real-time data augmentation generator for PASCAL VOC2011."""
 
     def __init__(self,
                  image_shape=(500, 500, 3),
@@ -40,6 +40,7 @@ class PascalVocGenerator(ImageDataGenerator):
                  rescale=None,
                  preprocessing_function=None,
                  data_format=None):
+        """Init."""
         self.image_shape = tuple(image_shape)
         self.image_resample = image_resample
         self.pixelwise_center = pixelwise_center
@@ -49,6 +50,7 @@ class PascalVocGenerator(ImageDataGenerator):
         super(PascalVocGenerator, self).__init__()
 
     def standardize(self, x):
+        """Standardize image."""
         if self.pixelwise_center:
             x -= self.pixel_mean
         if self.pixelwise_std_normalization:
@@ -58,6 +60,7 @@ class PascalVocGenerator(ImageDataGenerator):
     def flow_from_imageset(self, image_set_loader,
                            class_mode='categorical', classes=None,
                            batch_size=1, shuffle=True, seed=None):
+        """PascalVocGenerator."""
         return IndexIterator(
             image_set_loader, self,
             class_mode=class_mode,
@@ -68,10 +71,12 @@ class PascalVocGenerator(ImageDataGenerator):
 
 
 class IndexIterator(Iterator):
+    """Iterator over index."""
 
     def __init__(self, image_set_loader, image_data_generator,
                  class_mode='categorical', classes=None,
                  batch_size=1, shuffle=False, seed=None):
+        """Init."""
         self.image_set_loader = image_set_loader
         self.image_data_generator = image_data_generator
 
@@ -92,6 +97,7 @@ class IndexIterator(Iterator):
                                             shuffle, seed)
 
     def next(self):
+        """Next batch."""
         with self.lock:
             index_array, current_index, current_batch_size = next(
                 self.index_generator)
@@ -127,12 +133,13 @@ class IndexIterator(Iterator):
 
 
 class ImageSetLoader(object):
-    """Helper class to load image data into numpy arrays
-    """
+    """Helper class to load image data into numpy arrays."""
+
     def __init__(self, image_set, image_dir, label_dir, target_size=(500, 500),
                  image_format='jpg', color_mode='rgb', label_format='png',
                  data_format=None,
                  save_to_dir=None, save_prefix='', save_format='jpg'):
+        """Init."""
         if data_format is None:
             data_format = K.image_data_format()
         self.data_format = data_format
@@ -184,6 +191,7 @@ class ImageSetLoader(object):
 
     def load_img(self, fn):
         """Image load method.
+
         # Arguments
             fn: filename of the image (without extension suffix)
         # Returns
@@ -200,6 +208,7 @@ class ImageSetLoader(object):
 
     def load_seg(self, fn):
         """Segmentation load method.
+
         # Arguments
             fn: filename of the image (without extension suffix)
         # Returns
