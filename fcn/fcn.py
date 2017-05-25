@@ -197,7 +197,7 @@ def _handle_data_format():
         COL_AXIS = 3
 
 
-def FCN(basenet='vgg16', trainable_base=False,
+def FCN(basenet='vgg16', trainable_base=True,
         num_output=21, input_shape=(None, None, 3),
         weights='imagenet'):
     """Instantiate the FCN8s architecture with keras.
