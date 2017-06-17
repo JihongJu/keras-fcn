@@ -91,5 +91,4 @@ FCN8s with VGG16 as base net:
 
 ### TODO
 
- - load pre-trained weights
- - predict & test scripts
+ - Add ResNet
