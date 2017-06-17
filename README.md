@@ -42,7 +42,7 @@ fcn_vgg16.compile(optimizer='rmsprop',
 fcn_vgg16.fit(X_train, y_train, batch_size=1)
 ```
 
-More details see [Training Pascal VOC2011 Segmention](https://github.com/JihongJu/keras-fcn/blob/develop/voc2011/train.py)
+More details see [Training Pascal VOC2011 Segmention](https://github.com/JihongJu/keras-fcn/blob/master/voc2011/train.py)
 
 #### Try Examples
 
