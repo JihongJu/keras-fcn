@@ -8,7 +8,9 @@ A re-implementation of Fully Convolutional Networks with Keras
 
 #### Dependencies
 
-[keras](https://keras.io/#installation), [tensorflow](https://www.tensorflow.org/install/)/[theano](http://deeplearning.net/software/theano/install.html) and their corresponding dependencies.
+
+1. [keras](https://keras.io/#installation)
+2. [tensorflow](https://www.tensorflow.org/install/)/[theano](http://deeplearning.net/software/theano/install.html)/[CNTK](https://docs.microsoft.com/en-us/cognitive-toolkit/Setup-CNTK-on-your-machine)
 
 
 #### Install with `pip`
@@ -23,7 +25,7 @@ $ pip install git+https://github.com/JihongJu/keras-fcn.git
 ```bash
 $ git clone https://github.com/JihongJu/keras-fcn.git
 $ cd keras-fcn
-$ python setup.py build
+$ pip install --editable .
 ```
 
 ### Usage
