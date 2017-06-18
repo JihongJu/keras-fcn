@@ -1,5 +1,5 @@
 """Test FCN."""
-
+import numpy as np
 from keras_fcn import FCN
 from keras import backend as K
 
@@ -18,7 +18,10 @@ def is_same_shape(shape, expected_shape, data_format=None):
 
 def test_fcn_vgg16_shape():
     """Test output shape."""
-    input_shape = (500, 500, 3)
+    if K.image_data_format() == 'channels_first':
+        input_shape = (3, 500, 500)
+    else:
+        input_shape = (500, 500, 3)
     fcn_vgg16 = FCN(input_shape=input_shape)
     for l in fcn_vgg16.layers:
         if l.name == 'pool1':
@@ -56,3 +59,29 @@ def test_fcn_vgg16_shape():
     input_shape = (1366, 768, 3)
     fcn_vgg16 = FCN(input_shape=input_shape)
     assert is_same_shape(fcn_vgg16.output_shape, (None, 1366, 768, 21))
+
+
+def test_fcn_vgg16_correctness():
+    """Test output not NaN."""
+    if K.image_data_format() == 'channels_first':
+        input_shape = (3, 500, 500)
+        x = np.random.rand(1, 3, 500, 500)
+        y = np.random.randint(21, size=(1, 500, 500))
+        y = np.eye(21)[y]
+        y = np.transpose(y, (0, 3, 1, 2))
+    else:
+        input_shape = (500, 500, 3)
+        x = np.random.rand(1, 500, 500, 3)
+        y = np.random.randint(21, size=(1, 500, 500))
+        y = np.eye(21)[y]
+    fcn_vgg16 = FCN(input_shape=input_shape)
+    fcn_vgg16.compile(optimizer='rmsprop',
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+    fcn_vgg16.fit(x, y, batch_size=1, epochs=1)
+    loss = fcn_vgg16.evaluate(x, y, batch_size=1)
+    assert not np.any(np.isinf(loss))
+    assert not np.any(np.isnan(loss))
+    y_pred = fcn_vgg16.predict(x, batch_size=1)
+    assert not np.any(np.isinf(y_pred))
+    assert not np.any(np.isnan(y_pred))
