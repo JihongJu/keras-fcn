@@ -10,7 +10,7 @@ A re-implementation of Fully Convolutional Networks with Keras
 
 
 1. [keras](https://keras.io/#installation)
-2. [tensorflow](https://www.tensorflow.org/install/)/[theano](http://deeplearning.net/software/theano/install.html)/[CNTK](https://docs.microsoft.com/en-us/cognitive-toolkit/Setup-CNTK-on-your-machine)
+2. [tensorflow](https://www.tensorflow.org/install/)/[theano](http://deeplearning.net/software/theano/install.html)/[CNTK](https://docs.microsoft.com/en-us/cognitive-toolkit/Setup-CNTK-on-your-machine) (CNTK is not tested.)
 
 
 ### Install with `pip`
@@ -134,8 +134,6 @@ def my_decode_block(classes, scale):
 
 ```
 
-More details see [Training Pascal VOC2011 Segmention](https://github.com/JihongJu/keras-fcn/blob/master/voc2011/train.py)
-
 ## Try Examples
 
 1. Download [VOC2011](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/) dataset
@@ -171,7 +169,7 @@ $ cd voc2011
 $ python train.py
 ```
 
-More details see source code of the example in `jihong/keras-fcn/voc2011`.
+More details see source code of the example in [Training Pascal VOC2011 Segmention](https://github.com/JihongJu/keras-fcn/blob/master/voc2011/train.py)
 
 
 ### Model Architecture
