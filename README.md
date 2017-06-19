@@ -134,7 +134,7 @@ def my_decode_block(classes, scale):
 
 ```
 
-## Try Examples
+## Try Examples (The example is out-of-date for now)
 
 1. Download [VOC2011](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/) dataset
 
