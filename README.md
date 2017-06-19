@@ -42,9 +42,96 @@ fcn_vgg16.compile(optimizer='rmsprop',
 fcn_vgg16.fit(X_train, y_train, batch_size=1)
 ```
 
+### FCN with VGG19
 
-### Custom FCN
 ```python
+from keras_fcn import FCN
+fcn_vgg19 = FCN_VGG19(input_shape=(500, 500, 3), classes=21,  
+                      weights='imagenet', trainable_encoder=True)
+fcn_vgg19.compile(optimizer='rmsprop',
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+fcn_vgg19.fit(X_train, y_train, batch_size=1)
+```
+
+### Custom FCN (VGG16 as an example)
+
+```python
+from keras.layers import Input
+from keras.models import Model
+from keras_fcn.encoders import Encoder
+from keras_fcn.decoders import VGGDecoder
+from keras_fcn.blocks import (vgg_conv, vgg_fc)
+inputs = Input(shape=(224, 224, 3))
+blocks = [vgg_conv(64, 2, 'block1'),
+          vgg_conv(128, 2, 'block2'),
+          vgg_conv(256, 3, 'block3'),
+          vgg_conv(512, 3, 'block4'),
+          vgg_conv(512, 3, 'block5'),
+          vgg_fc(4096)]
+encoder = Encoder(inputs, blocks, weights='imagenet',
+                  trainable=True)
+feat_pyramid = encoder.outputs   # A feature pyramid with 5 scales
+feat_pyramid = feat_pyramid[:3]  # Select only the top three scale of the pyramid
+feat_pyramid.append(inputs)      # Add image to the bottom of the pyramid
+
+
+outputs = VGGDecoder(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=21)
+
+fcn_custom = Model(inputs=inputs, outputs=outputs)
+```
+
+And implement a custom Fully Convolutional Network becomes simply define a series of convolutional blocks that one stacks on top of another.
+
+### Custom decoders
+
+```python
+from keras_fcn.blocks import vgg_deconv, vgg_score
+from keras_fcn.decoders import Decoder
+decode_blocks = [
+vgg_deconv(classes=21, scale=1),            
+vgg_deconv(classes=21, scale=0.01),
+vgg_deconv(classes=21, scale=0.0001, kernel_size=(16,16), strides=(8,8)),
+vgg_score(crop_offset='centered')           # A functional block cropping the
+                                            # outcome scores to match the image.
+                                            # Can use together with other custom
+                                            # blocks
+]
+outputs = Decoder(feat_pyramid, decode_blocks)
+
+```
+
+The `decode_blocks` can be customized as well.
+
+```python
+from keras_fcn.layers import CroppingLike2D
+def my_decode_block(classes, scale):
+    """A functional decoder block.
+    :param: classes: Integer, number of classes
+    :param scale: Float, weight of the current pyramid scale, varing from 0 to 1
+
+    :return f: A function that takes a feature from the feature pyramid, x,
+               applies upsampling and accumulate the result from the top of
+               the pyramid.
+    """
+  def f(x, y):
+    x = Lambda(lambda xx: xx * scale)(x)  # First weighs the scale
+    x = Conv2D(filters=classes, kernel_size=(1,1))(x)   # Stride 1 conv layers,  
+                                                        # replacing the
+                                                        # traditional FC layer.
+    if y is None:   # First block has no y.
+      y = Conv2DTranspose(filters=classes, ...) # Deconvolutional layer or
+                                                # Upsampling Layer
+    else:
+      x = CroppingLike2D(target=y, offset='centered')(x) # Crop the upsampled
+                                                         # feature to match
+                                                         # the output of one
+                                                         # scale up.
+      y = add([y, x])
+      y = Conv2DTranspose(filters=classes, ...) # Deconv/Upsampling again.
+    return y  # return output of the current scale in the feature pyramid
+  return x
+
 ```
 
 More details see [Training Pascal VOC2011 Segmention](https://github.com/JihongJu/keras-fcn/blob/master/voc2011/train.py)

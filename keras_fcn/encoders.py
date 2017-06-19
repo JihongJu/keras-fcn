@@ -27,14 +27,14 @@ class Encoder(Model):
     >>> from keras.layers import Input
     >>> from keras_fcn.encoders import Encoder
     >>> from keras_fcn.blocks import (vgg_conv, vgg_fc)
-    >>> x = Input(shape=(224, 224, 3))
+    >>> inputs = Input(shape=(224, 224, 3))
     >>> blocks = [vgg_conv(64, 2, 'block1'),
     >>>           vgg_conv(128, 2, 'block2'),
     >>>           vgg_conv(256, 3, 'block3'),
     >>>           vgg_conv(512, 3, 'block4'),
     >>>           vgg_conv(512, 3, 'block5'),
     >>>           vgg_fc(4096)]
-    >>> encoder = Encoder(Input(x), blocks=blocks, 'weights'='imagenet',
+    >>> encoder = Encoder(inputs, blocks, weights='imagenet',
     >>>                   trainable=True)
     >>> feat_pyramid = encoder.outputs   # A feature pyramid with 5 scales
 
