@@ -1,5 +1,6 @@
 """fcn init."""
 
 from .models import (
-    FCN
+    FCN,
+    FCN_VGG16
 )

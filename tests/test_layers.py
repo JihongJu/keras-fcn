@@ -21,6 +21,8 @@ def test_cropping_like_2d():
                                     input_len_dim1, input_len_dim2)
             target = np.random.rand(num_samples, stack_size,
                                     target_len_dim1, target_len_dim2)
+            invalid_target = np.random.rand(num_samples, stack_size,
+                                            input_len_dim1 + 1, input_len_dim2 + 1)
             expected_output = inputs[:,
                                      :,
                                      offset[0]: offset[0] + target_len_dim1,
@@ -32,6 +34,8 @@ def test_cropping_like_2d():
                                     stack_size)
             target = np.random.rand(num_samples, target_len_dim1,
                                     target_len_dim2, stack_size)
+            invalid_target = np.random.rand(num_samples, input_len_dim1 + 1,
+                                            input_len_dim2 + 1, stack_size)
             expected_output = inputs[:,
                                      offset[0]: offset[0] + target_len_dim1,
                                      offset[1]: offset[1] + target_len_dim2,
@@ -67,3 +71,7 @@ def test_cropping_like_2d():
         with pytest.raises(ValueError):
             layer = CroppingLike2D(target=K.variable(target), offset=[3, 3, 3],
                                    data_format=data_format)
+        with pytest.raises(ValueError):
+            layer = CroppingLike2D(target=K.variable(invalid_target),
+                                   offset='centered', data_format=data_format)
+            output = layer(K.variable(inputs))

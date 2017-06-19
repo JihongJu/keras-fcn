@@ -14,7 +14,9 @@ setuptools.setup(
             "pytest",
             "pytest-cov",
             "pytest-pep8",
-            "pytest-runner"
+            "pytest-runner",
+            "pydot",
+            "graphviz"
         ],
     },
     install_requires=[

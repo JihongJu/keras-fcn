@@ -1,10 +1,10 @@
 from keras.utils import plot_model
-from fcn import FCN
+from keras_fcn import FCN_VGG16
 
 
 def vis_fcn_vgg16():
     input_shape = (500, 500, 3)
-    fcn_vgg16 = FCN(input_shape=input_shape)
+    fcn_vgg16 = FCN_VGG16(input_shape=input_shape, classes=21)
     plot_model(fcn_vgg16, to_file='fcn_vgg16.png')
 
 

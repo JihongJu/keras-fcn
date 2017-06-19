@@ -22,33 +22,39 @@ def test_fcn_vgg16_shape():
         input_shape = (3, 500, 500)
     else:
         input_shape = (500, 500, 3)
-    fcn_vgg16 = FCN(input_shape=input_shape)
+    fcn_vgg16 = FCN(input_shape=input_shape, classes=21)
+
+    layers = [l.name for l in fcn_vgg16.layers]
+    assert 'upscore_feat1' in layers
+    assert 'upscore_feat2' in layers
+    assert 'upscore_feat3' in layers
+
     for l in fcn_vgg16.layers:
-        if l.name == 'pool1':
+        if l.name == 'block1_pool':
             test_shape = (None, 349, 349, 64)
             assert is_same_shape(l.output_shape, test_shape)
-        elif l.name == 'pool2':
+        elif l.name == 'block2_pool':
             test_shape = (None, 175, 175, 128)
             assert is_same_shape(l.output_shape, test_shape)
-        elif l.name == 'pool3':
+        elif l.name == 'block3_pool':
             test_shape = (None, 88, 88, 256)
             assert is_same_shape(l.output_shape, test_shape)
-        elif l.name == 'pool4':
+        elif l.name == 'block4_pool':
             test_shape = (None, 44, 44, 512)
             assert is_same_shape(l.output_shape, test_shape)
-        elif l.name == 'pool5':
+        elif l.name == 'block5_pool':
             test_shape = (None, 22, 22, 512)
             assert is_same_shape(l.output_shape, test_shape)
-        elif l.name == 'drop7':
+        elif l.name == 'dropout_2':
             test_shape = (None, 16, 16, 4096)
             assert is_same_shape(l.output_shape, test_shape)
-        elif l.name == 'upscore2':
+        elif l.name == 'upscore_feat1':
             test_shape = (None, 34, 34, 21)
             assert is_same_shape(l.output_shape, test_shape)
-        elif l.name == 'upscore_pool4':
+        elif l.name == 'upscore_feat2':
             test_shape = (None, 70, 70, 21)
             assert is_same_shape(l.output_shape, test_shape)
-        elif l.name == 'upscore8':
+        elif l.name == 'upscore_feat3':
             test_shape = (None, 568, 568, 21)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'score':
@@ -57,7 +63,7 @@ def test_fcn_vgg16_shape():
     assert is_same_shape(fcn_vgg16.output_shape, (None, 500, 500, 21))
 
     input_shape = (1366, 768, 3)
-    fcn_vgg16 = FCN(input_shape=input_shape)
+    fcn_vgg16 = FCN(input_shape=input_shape, classes=21)
     assert is_same_shape(fcn_vgg16.output_shape, (None, 1366, 768, 21))
 
 
@@ -74,7 +80,7 @@ def test_fcn_vgg16_correctness():
         x = np.random.rand(1, 500, 500, 3)
         y = np.random.randint(21, size=(1, 500, 500))
         y = np.eye(21)[y]
-    fcn_vgg16 = FCN(input_shape=input_shape)
+    fcn_vgg16 = FCN(classes=21, input_shape=input_shape)
     fcn_vgg16.compile(optimizer='rmsprop',
                       loss='categorical_crossentropy',
                       metrics=['accuracy'])

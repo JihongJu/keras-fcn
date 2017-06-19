@@ -45,6 +45,9 @@ class CroppingLike2D(Layer):
             input_width = input_shape[3]
             target_height = self.target_shape[2]
             target_width = self.target_shape[3]
+            if target_height > input_height or target_width > input_width:
+                raise ValueError('The Tensor to be cropped need to be smaller'
+                                 'or equal to the target Tensor.')
 
             if self.offset == 'centered':
                 self.offset = [int((input_height - target_height) / 2),
@@ -66,6 +69,9 @@ class CroppingLike2D(Layer):
             input_width = input_shape[2]
             target_height = self.target_shape[1]
             target_width = self.target_shape[2]
+            if target_height > input_height or target_width > input_width:
+                raise ValueError('The Tensor to be cropped need to be smaller'
+                                 'or equal to the target Tensor.')
 
             if self.offset == 'centered':
                 self.offset = [int((input_height - target_height) / 2),
