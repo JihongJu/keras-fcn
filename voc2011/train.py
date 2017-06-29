@@ -3,6 +3,7 @@ import yaml
 import datetime
 import numpy as np
 import tensorflow as tf
+import keras
 import keras.backend as K
 from keras_fcn import FCN
 from voc_generator import PascalVocGenerator, ImageSetLoader
@@ -54,7 +55,8 @@ val_loader = ImageSetLoader(**init_args['image_set_loader']['val'])
 
 fcn_vgg16 = FCN(input_shape=(500, 500, 3), classes=21,
                 weights='imagenet', trainable_encoder=True)
-fcn_vgg16.compile(optimizer='adam',
+optimizer = keras.optimizers.Adam(1e-4)
+fcn_vgg16.compile(optimizer=optimizer,
                   loss='categorical_crossentropy',
                   metrics=['accuracy', 'categorical_accuracy'])
 
