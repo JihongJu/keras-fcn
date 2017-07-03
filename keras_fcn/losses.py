@@ -1,8 +1,7 @@
 import keras
 import keras.backend as K
-from keras.losses import categorical_crossentropy
 
 
-def categorical_crossentropy(y_true, y_pred):
-    return K.mean(keras.losses.categorical_crossentropy(y_pred, y_true),
-                  axis=[1, 2])
+def mean_categorical_crossentropy(y_true, y_pred):
+    loss = K.mean(keras.losses.categorical_crossentropy(y_true, y_pred), axis=[1, 2])
+    return loss
