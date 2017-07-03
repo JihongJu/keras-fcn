@@ -46,13 +46,21 @@ csv_logger = CSVLogger(
     'output/{}_fcn_vgg16.csv'.format(datetime.datetime.now().isoformat()))
 
 
-datagen = PascalVocGenerator(image_shape=[224, 224, 3],
-                             image_resample=True,
-                             pixelwise_center=True,
-                             pixel_mean=[104.00699, 116.66877, 122.67892],
-                             pixelwise_std_normalization=True,
-                             pixel_std=[62, 62, 62])
+train_generator = PascalVocGenerator(image_shape=[224, 224, 3],
+                                     image_resample=True,
+                                     pixelwise_center=True,
+                                     pixel_mean=[104.00699,
+                                                 116.66877, 122.67892],
+                                     pixelwise_std_normalization=True,
+                                     pixel_std=[62, 62, 62])
 
+test_generator = PascalVocGenerator(image_shape=[224, 224, 3],
+                                    image_resample=True,
+                                    pixelwise_center=True,
+                                    pixel_mean=[104.00699,
+                                                116.66877, 122.67892],
+                                    pixelwise_std_normalization=True,
+                                    pixel_std=[62, 62, 62])
 
 train_loader = ImageSetLoader(**init_args['image_set_loader']['train'])
 val_loader = ImageSetLoader(**init_args['image_set_loader']['val'])
@@ -68,20 +76,23 @@ fcn_vgg16.compile(optimizer=optimizer,
 
 
 fcn_vgg16.fit_generator(
-    datagen.flow_from_imageset(class_mode='categorical',
-                               classes=21,
-                               batch_size=1,
-                               shuffle=True,
-                               image_set_loader=train_loader),
+    train_generator.flow_from_imageset(
+        class_mode='categorical',
+        classes=21,
+        batch_size=1,
+        shuffle=True,
+        image_set_loader=train_loader),
     steps_per_epoch=1112,
     epochs=100,
-    validation_data=datagen.flow_from_imageset(class_mode='categorical',
-                                               classes=21,
-                                               batch_size=1,
-                                               shuffle=True,
-                                               image_set_loader=val_loader),
+    validation_data=test_generator.flow_from_imageset(
+        class_mode='categorical',
+        classes=21,
+        batch_size=1,
+        shuffle=True,
+        image_set_loader=val_loader),
     validation_steps=1111,
     verbose=1,
     max_q_size=100,
     callbacks=[lr_reducer, early_stopper, csv_logger, checkpointer])
+
 fcn_vgg16.save('output/fcn_vgg16.h5')
