@@ -12,5 +12,5 @@ def test_categorical_crossentropy():
     y_true, y_pred = K.variable(y_true), K.variable(y_pred)
 
     loss = mean_categorical_crossentropy(y_true, y_pred)
-    loss = K.get_value(loss)
+    loss = K.eval(loss)
     assert np.allclose(loss, 0.69314718)
