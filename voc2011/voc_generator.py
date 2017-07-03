@@ -1,4 +1,5 @@
 """Pascal VOC Segmenttion Generator."""
+from __future__ import unicode_literals
 import os
 import numpy as np
 from keras import backend as K
@@ -127,7 +128,7 @@ class IndexIterator(Iterator):
                     y = y[np.newaxis, ...]
                 else:
                     y = y[..., np.newaxis]
-                self.image_set_loader.save(x, y, current_index+i)
+                self.image_set_loader.save(x, y, current_index + i)
 
         return batch_x, batch_y
 
@@ -148,7 +149,11 @@ class ImageSetLoader(object):
         if not os.path.exists(image_set):
             raise IOError('Image set {} does not exist. Please provide a'
                           'valid file.'.format(image_set))
-        self.filenames = np.loadtxt(image_set, dtype=str)
+        self.filenames = np.loadtxt(image_set, dtype=bytes)
+        try:
+            self.filenames = [fn.decode('utf-8') for fn in self.filenames]
+        except AttributeError as e:
+            print(str(e), self.filenames[:5])
         if not os.path.exists(image_dir):
             raise IOError('Directory {} does not exist. Please provide a '
                           'valid directory.'.format(image_dir))
@@ -198,7 +203,8 @@ class ImageSetLoader(object):
             arr: numpy array of shape self.image_shape
         """
         img_path = os.path.join(self.image_dir,
-                                '{}.{}'.format(fn, self.image_format))
+                                '{}.{}'.format(fn,
+                                               self.image_format))
         if not os.path.exists(img_path):
             raise IOError('Image {} does not exist.'.format(img_path))
         img = load_img(img_path, self.grayscale, self.target_size)
