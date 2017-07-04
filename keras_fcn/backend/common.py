@@ -4,6 +4,7 @@ import keras.backend as K
 
 def load_weights(model, weights_path):
     """Load weights from Caffe models."""
+    print("Loading weights...")
     if h5py is None:
         raise ImportError('`load_weights` requires h5py.')
     f = h5py.File(weights_path, mode='r')

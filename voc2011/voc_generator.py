@@ -108,6 +108,7 @@ class IndexIterator(Iterator):
         batch_y = np.zeros(
             (current_batch_size,) + self.label_shape,
             dtype=np.int8)
+        #batch_y = np.reshape(batch_y, (current_batch_size, -1, self.classes))
 
         for i, j in enumerate(index_array):
             fn = self.filenames[j]
@@ -116,19 +117,20 @@ class IndexIterator(Iterator):
             batch_x[i] = x
             y = self.image_set_loader.load_seg(fn)
             y = to_categorical(y, self.classes).reshape(self.label_shape)
+            #y = np.reshape(y, (-1, self.classes))
             batch_y[i] = y
 
         # save augmented images to disk for debugging
-        if self.image_set_loader.save_to_dir:
-            for i in range(current_batch_size):
-                x = batch_x[i]
-                y = batch_y[i].argmax(
-                    self.image_data_generator.channel_axis - 1)
-                if self.image_data_generator.data_format == 'channels_first':
-                    y = y[np.newaxis, ...]
-                else:
-                    y = y[..., np.newaxis]
-                self.image_set_loader.save(x, y, current_index + i)
+        #if self.image_set_loader.save_to_dir:
+        #    for i in range(current_batch_size):
+        #        x = batch_x[i]
+        #        y = batch_y[i].argmax(
+        #            self.image_data_generator.channel_axis - 1)
+        #        if self.image_data_generator.data_format == 'channels_first':
+        #            y = y[np.newaxis, ...]
+        #        else:
+        #            y = y[..., np.newaxis]
+        #        self.image_set_loader.save(x, y, current_index + i)
 
         return batch_x, batch_y
 
