@@ -4,6 +4,8 @@
 
 A re-implementation of Fully Convolutional Networks with Keras
 
+ATTENTION: The repository is now down for debugging because of a bug found in JihongJu/keras-fcn#14
+
 ## Installation
 
 ### Dependencies
