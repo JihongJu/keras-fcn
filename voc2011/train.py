@@ -6,14 +6,18 @@ import keras
 import keras.backend as K
 import tensorflow as tf
 from keras_fcn import FCN
-from keras_fcn.metrics import Mean_IoU
-from keras_fcn.losses import mean_categorical_crossentropy
+from keras_fcn.losses import (
+    mean_categorical_crossentropy,
+    flatten_categorical_crossentropy
+    )
 from voc_generator import PascalVocGenerator, ImageSetLoader
 from keras.callbacks import (
     ReduceLROnPlateau,
     CSVLogger,
     EarlyStopping,
-    ModelCheckpoint)
+    ModelCheckpoint,
+    TerminateOnNaN)
+from keras_fcn.callbacks import CheckNumericsOps
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -38,40 +42,44 @@ checkpointer = ModelCheckpoint(
 lr_reducer = ReduceLROnPlateau(monitor='val_loss',
                                factor=np.sqrt(0.1),
                                cooldown=0,
-                               patience=10, min_lr=0.3e-6)
+                               patience=10, min_lr=1e-12)
 early_stopper = EarlyStopping(monitor='val_loss',
                               min_delta=0.001,
-                              patience=100)
+                              patience=30)
+nan_terminator = TerminateOnNaN()
 csv_logger = CSVLogger(
-    'output/{}_fcn_vgg16.csv'.format(datetime.datetime.now().isoformat()))
+    #'output/{}_fcn_vgg16.csv'.format(datetime.datetime.now().isoformat()))
+    'output/tmp_fcn_vgg16.csv')
+check_num = CheckNumericsOps(validation_data=[np.random.random((1, 224, 224, 3)), 1],
+                             histogram_freq=20)
+
 
 
 train_generator = PascalVocGenerator(image_shape=[224, 224, 3],
                                      image_resample=True,
                                      pixelwise_center=True,
-                                     pixel_mean=[104.00699,
-                                                 116.66877, 122.67892],
+                                     pixel_mean=[115.85100, 110.50989, 102.16182],
                                      pixelwise_std_normalization=True,
-                                     pixel_std=[62, 62, 62])
+                                     pixel_std=[70.30930, 69.41244, 72.60676])
 
 test_generator = PascalVocGenerator(image_shape=[224, 224, 3],
                                     image_resample=True,
                                     pixelwise_center=True,
-                                    pixel_mean=[104.00699,
-                                                116.66877, 122.67892],
+                                    pixel_mean=[115.85100, 110.50989, 102.16182],
                                     pixelwise_std_normalization=True,
-                                    pixel_std=[62, 62, 62])
+                                    pixel_std=[70.30930, 69.41244, 72.60676])
 
 train_loader = ImageSetLoader(**init_args['image_set_loader']['train'])
 val_loader = ImageSetLoader(**init_args['image_set_loader']['val'])
 
 fcn_vgg16 = FCN(input_shape=(224, 224, 3), classes=21,
-                weights='imagenet', trainable_encoder=True)
-optimizer = keras.optimizers.Adam(1e-3)
-mean_iou = Mean_IoU(classes=21)
+                weights=None, trainable_encoder=True)
+optimizer = keras.optimizers.Adam(1e-4)
 
 fcn_vgg16.compile(optimizer=optimizer,
-                  loss=mean_categorical_crossentropy,
+                  #loss=mean_categorical_crossentropy,
+                  #loss=flatten_categorical_crossentropy(classes=21),
+                  loss='categorical_crossentropy',
                   metrics=['accuracy'])
 
 
@@ -92,7 +100,6 @@ fcn_vgg16.fit_generator(
         image_set_loader=val_loader),
     validation_steps=1111,
     verbose=1,
-    max_q_size=100,
-    callbacks=[lr_reducer, early_stopper, csv_logger, checkpointer])
+    callbacks=[lr_reducer, early_stopper, csv_logger, checkpointer, nan_terminator, check_num])
 
 fcn_vgg16.save('output/fcn_vgg16.h5')
