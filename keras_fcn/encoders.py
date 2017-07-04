@@ -40,7 +40,7 @@ class Encoder(Model):
 
     """
 
-    def __init__(self, inputs, blocks, weights='imagenet',
+    def __init__(self, inputs, blocks, weights=None,
                  trainable=True, name='encoder'):
         inverse_pyramid = []
 

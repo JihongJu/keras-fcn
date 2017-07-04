@@ -5,7 +5,7 @@ from keras.engine import InputSpec
 
 
 class CroppingLike2D(Layer):
-    def __init__(self, target, offset=None, data_format=None,
+    def __init__(self, target_shape, offset=None, data_format=None,
                  **kwargs):
         """Crop to target.
 
@@ -14,7 +14,7 @@ class CroppingLike2D(Layer):
         """
         super(CroppingLike2D, self).__init__(**kwargs)
         self.data_format = conv_utils.normalize_data_format(data_format)
-        self.target_shape = K.int_shape(target)
+        self.target_shape = target_shape
         if offset is None or offset == 'centered':
             self.offset = 'centered'
         elif isinstance(offset, int):
@@ -88,3 +88,10 @@ class CroppingLike2D(Layer):
                             self.offset[1]:self.offset[1] + target_width,
                             :]
             return output
+
+    def get_config(self):
+        config = {'target_shape': self.target_shape,
+                  'offset': self.offset,
+                  'data_format': self.data_format}
+        base_config = super(CroppingLike2D, self).get_config()
+        return dict(list(base_config.items()) + list(config.items()))
