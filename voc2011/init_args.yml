@@ -4,8 +4,8 @@ image_set_loader:
     image_dir: ../data/VOC2011/JPEGImages/
     label_dir: ../data/VOC2011/SegmentationClass
     target_size:
-      - 500
-      - 500
+      - 224
+      - 224
     image_format: 'jpg'
     color_mode: 'rgb'
     label_format: 'png'
@@ -14,8 +14,8 @@ image_set_loader:
     image_dir: ../data/VOC2011/JPEGImages/
     label_dir: ../data/VOC2011/SegmentationClass
     target_size:
-      - 500
-      - 500
+      - 224
+      - 224
     image_format: 'jpg'
     color_mode: 'rgb'
     label_format: 'png'
@@ -24,8 +24,8 @@ image_set_loader:
     image_dir: ../data/VOC2011/JPEGImages/
     label_dir: ../data/VOC2011/SegmentationClass
     target_size:
-      - 500
-      - 500
+      - 224
+      - 224
     image_format: 'jpg'
     color_mode: 'rgb'
     label_format: 'png'
