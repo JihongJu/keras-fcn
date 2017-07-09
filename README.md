@@ -144,7 +144,7 @@ def vgg_upsampling(classes, target_shape=None, scale=1, block_name='featx'):
 
 ```
 
-## Try Examples (The example is out-of-date for now)
+## Try Examples
 
 1. Download [VOC2011](http://host.robots.ox.ac.uk/pascal/VOC/voc2011/) dataset
 
@@ -172,9 +172,7 @@ $ make bash
 
 ```bash
 $ cd ~/workspace
-$ source venv/bin/activate
-$ pip install -r requirements
-$ pip setup.py build
+$ pip setup.py -e .
 $ cd voc2011
 $ python train.py
 ```
