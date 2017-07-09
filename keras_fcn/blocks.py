@@ -122,8 +122,13 @@ def vgg_upsampling(classes, target_shape=None, scale=1, block_name='featx'):
     `channels_first`.
 
     >>> from keras_fcn.blocks import vgg_upsampling
-    >>> x = vgg_upsampling(classes=21, target_shape=(None, 28, 28, None),
-    >>>                    scale=1e-2, block_name='feat2')(x)
+    >>> feat1, feat2, feat3 = feat_pyramid[:3]
+    >>> y = vgg_upsampling(classes=21, target_shape=(None, 14, 14, None),
+    >>>                    scale=1, block_name='feat1')(feat1, None)
+    >>> y = vgg_upsampling(classes=21, target_shape=(None, 28, 28, None),
+    >>>                    scale=1e-2, block_name='feat2')(feat2, y)
+    >>> y = vgg_upsampling(classes=21, target_shape=(None, 224, 224, None),
+    >>>                    scale=1e-4, block_name='feat3')(feat3, y)
 
     """
     def f(x, y):
