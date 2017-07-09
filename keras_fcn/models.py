@@ -60,13 +60,9 @@ def FCN_VGG16(input_shape, classes,
     # outputs = VGGDecoder(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=21)
     outputs = VGGUpsampler(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=21)
 
-    # Flatten
-    # if K.image_data_format() == 'channels_last':
-    #     scores = keras.activations.softmax(outputs, axis=-1)
-    # else:
-    #     scores = keras.activations.softmax(outputs, axis=1)
-    #outputs = Reshape((-1, classes), name='flatten_score')(outputs)
+    # Activation TODO{jihong} work only for channels_last
     scores = Activation('softmax')(outputs)
+
     # return model
     return Model(inputs=inputs, outputs=scores)
 
@@ -99,7 +95,10 @@ def FCN_VGG19(input_shape, classes,
     feat_pyramid.append(inputs)
 
     # Decode feature pyramid
-    outputs = VGGDecoder(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=21)
+    outputs = VGGUpsampler(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=21)
+
+    # Activation TODO{jihong} work only for channels_last
+    outputs = Activation('softmax')(outputs)
 
     # return model
     return Model(inputs=inputs, outputs=outputs)

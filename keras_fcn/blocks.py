@@ -13,7 +13,7 @@ from keras.layers.merge import add
 from keras_fcn.layers import CroppingLike2D, BilinearUpSampling2D
 
 
-def vgg_conv(filters, convs, block_name='blockx'):
+def vgg_conv(filters, convs, padding=False, block_name='blockx'):
     """A VGG convolutional block for encoding.
 
     :param filters: Integer, number of filters per conv layer
@@ -27,6 +27,8 @@ def vgg_conv(filters, convs, block_name='blockx'):
     def f(x):
         for i in range(convs):
             if block_name == 'block1' and i == 0:
+                if padding is True:
+                    x = ZeroPadding2D(padding=(100, 100))(x)
                 x = Conv2D(filters, (3, 3), activation='relu', padding='same',
                            kernel_initializer='he_normal',
                            name='{}_conv{}'.format(block_name, int(i + 1)))(x)
@@ -82,13 +84,14 @@ def vgg_deconv(classes, scale=1, kernel_size=(4, 4), strides=(2, 2),
 
     """
     def f(x, y):
-        # def scaling(x, scale=1):
-        #    return x * 0.5
-        # s = Lambda(scaling, arguments={'scale': scale},
-        #           name='scale_{}'.format(block_name))(x)
-        score = Conv2D(filters=classes, kernel_size=(1, 1), activation='linear',
+        def scaling(xx, ss=1):
+            return xx * ss
+        scaled = Lambda(scaling, arguments={'ss': scale},
+                        name='scale_{}'.format(block_name))(x)
+        score = Conv2D(filters=classes, kernel_size=(1, 1),
+                       activation='linear',
                        kernel_initializer='he_normal',
-                       name='score_{}'.format(block_name))(x)
+                       name='score_{}'.format(block_name))(scaled)
         if y is None:
             upscore = Conv2DTranspose(filters=classes, kernel_size=kernel_size,
                                       strides=strides, padding='valid',
@@ -96,7 +99,8 @@ def vgg_deconv(classes, scale=1, kernel_size=(4, 4), strides=(2, 2),
                                       use_bias=False,
                                       name='upscore_{}'.format(block_name))(score)
         else:
-            crop = CroppingLike2D(target_shape=K.int_shape(y), offset=crop_offset,
+            crop = CroppingLike2D(target_shape=K.int_shape(y),
+                                  offset=crop_offset,
                                   name='crop_{}'.format(block_name))(score)
             merge = add([y, crop])
             upscore = Conv2DTranspose(filters=classes, kernel_size=kernel_size,
@@ -109,15 +113,25 @@ def vgg_deconv(classes, scale=1, kernel_size=(4, 4), strides=(2, 2),
 
 
 def vgg_upsampling(classes, target_shape=None, scale=1, block_name='featx'):
+    """A VGG convolutional block with bilinear upsampling for decoding.
+
+    :param classes: Integer, number of classes
+    :param scale: Float, scale factor to the input feature, varing from 0 to 1
+    :param target_shape: 4D Tuples with targe_height, target_width as
+    the 2nd, 3rd elements if `channels_last` or as the 3rd, 4th elements if
+    `channels_first`.
+
+    >>> from keras_fcn.blocks import vgg_upsampling
+    >>> x = vgg_upsampling(classes=21, target_shape=(None, 28, 28, None),
+    >>>                    scale=1e-2, block_name='feat2')(x)
+
+    """
     def f(x, y):
-        print('feat', x.get_shape())
         score = Conv2D(filters=classes, kernel_size=(1, 1),
                        activation='linear',
                        padding='valid',
                        kernel_initializer='he_normal',
                        name='score_{}'.format(block_name))(x)
-        print('target_shape', target_shape)
-        print('score', score.get_shape())
         if y is not None:
             def scaling(xx, ss=1):
                 return xx * ss
@@ -127,7 +141,6 @@ def vgg_upsampling(classes, target_shape=None, scale=1, block_name='featx'):
         upscore = BilinearUpSampling2D(
             target_shape=target_shape,
             name='upscore_{}'.format(block_name))(score)
-        print('upscore', upscore.get_shape())
         return upscore
     return f
 

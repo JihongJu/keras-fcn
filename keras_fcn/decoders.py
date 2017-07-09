@@ -44,7 +44,7 @@ def Decoder(pyramid, blocks):
 
 
 def VGGDecoder(pyramid, scales, classes):
-    """A Functional decoder for the VGG Nets.
+    """(Deprecated) A Functional decoder for the VGG Nets.
 
     :param: pyramid: A list of features in pyramid, scaling from large
                     receptive field to small receptive field.
@@ -80,6 +80,15 @@ def VGGDecoder(pyramid, scales, classes):
 
 
 def VGGUpsampler(pyramid, scales, classes):
+    """A Functional upsampler for the VGG Nets.
+
+    :param: pyramid: A list of features in pyramid, scaling from large
+                    receptive field to small receptive field.
+                    The bottom of the pyramid is the input image.
+    :param: scales: A list of weights for each of the feature map in the
+                    pyramid, sorted in the same order as the pyramid.
+    :param: classes: Integer, number of classes.
+    """
     if len(scales) != len(pyramid) - 1:
         raise ValueError('`scales` needs to match the length of'
                          '`pyramid` - 1.')

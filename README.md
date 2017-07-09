@@ -1,6 +1,7 @@
 # keras-fcn
 
-[![Build Status](https://travis-ci.org/JihongJu/keras-fcn.svg?branch=master)](https://travis-ci.org/JihongJu/keras-fcn) [![codecov](https://codecov.io/gh/jihongju/keras-fcn/branch/master/graph/badge.svg)](https://codecov.io/gh/jihongju/keras-fcn)[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/JihongJu/keras-fcn.svg?branch=master)](https://travis-ci.org/JihongJu/keras-fcn) [![codecov](https://codecov.io/gh/jihongju/keras-fcn/branch/master/graph/badge.svg)](https://codecov.io/gh/jihongju/keras-fcn)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 A re-implementation of Fully Convolutional Networks with Keras
 
@@ -12,7 +13,7 @@ ATTENTION: The repository is now down for debugging because of a bug found in Ji
 
 
 1. [keras](https://keras.io/#installation)
-2. [tensorflow](https://www.tensorflow.org/install/)/[theano](http://deeplearning.net/software/theano/install.html)/[CNTK](https://docs.microsoft.com/en-us/cognitive-toolkit/Setup-CNTK-on-your-machine) (CNTK is not tested.)
+2. [tensorflow](https://www.tensorflow.org/install/)
 
 
 ### Install with `pip`
@@ -62,7 +63,7 @@ fcn_vgg19.fit(X_train, y_train, batch_size=1)
 from keras.layers import Input
 from keras.models import Model
 from keras_fcn.encoders import Encoder
-from keras_fcn.decoders import VGGDecoder
+from keras_fcn.decoders import VGGUpsampler
 from keras_fcn.blocks import (vgg_conv, vgg_fc)
 inputs = Input(shape=(224, 224, 3))
 blocks = [vgg_conv(64, 2, 'block1'),
@@ -78,7 +79,8 @@ feat_pyramid = feat_pyramid[:3]  # Select only the top three scale of the pyrami
 feat_pyramid.append(inputs)      # Add image to the bottom of the pyramid
 
 
-outputs = VGGDecoder(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=21)
+outputs = VGGUpsampler(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=21)
+outputs = Activation('softmax')(outputs)
 
 fcn_custom = Model(inputs=inputs, outputs=outputs)
 ```
@@ -88,51 +90,54 @@ And implement a custom Fully Convolutional Network becomes simply define a serie
 ### Custom decoders
 
 ```python
-from keras_fcn.blocks import vgg_deconv, vgg_score
+from keras_fcn.blocks import vgg_upsampling
 from keras_fcn.decoders import Decoder
 decode_blocks = [
-vgg_deconv(classes=21, scale=1),            
-vgg_deconv(classes=21, scale=0.01),
-vgg_deconv(classes=21, scale=0.0001, kernel_size=(16,16), strides=(8,8)),
-vgg_score(crop_offset='centered')           # A functional block cropping the
-                                            # outcome scores to match the image.
-                                            # Can use together with other custom
-                                            # blocks
+vgg_upsampling(classes=21, target_shape=(None, 14, 14, None), scale=1),            
+vgg_upsampling(classes=21, target_shape=(None, 28, 28, None),  scale=0.01),
+vgg_upsampling(classes=21, target_shape=(None, 224, 224, None),  scale=0.0001)
 ]
-outputs = Decoder(feat_pyramid, decode_blocks)
+outputs = Decoder(feat_pyramid[-1], decode_blocks)
 
 ```
 
 The `decode_blocks` can be customized as well.
 
 ```python
-from keras_fcn.layers import CroppingLike2D
-def my_decode_block(classes, scale):
-    """A functional decoder block.
-    :param: classes: Integer, number of classes
-    :param scale: Float, weight of the current pyramid scale, varing from 0 to 1
+from keras_fcn.layers import BilinearUpSampling2D
 
-    :return f: A function that takes a feature from the feature pyramid, x,
-               applies upsampling and accumulate the result from the top of
-               the pyramid.
+def vgg_upsampling(classes, target_shape=None, scale=1, block_name='featx'):
+    """A VGG convolutional block with bilinear upsampling for decoding.
+
+    :param classes: Integer, number of classes
+    :param scale: Float, scale factor to the input feature, varing from 0 to 1
+    :param target_shape: 4D Tuples with targe_height, target_width as
+    the 2nd, 3rd elements if `channels_last` or as the 3rd, 4th elements if
+    `channels_first`.
+
+    >>> from keras_fcn.blocks import vgg_upsampling
+    >>> x = vgg_upsampling(classes=21, target_shape=(None, 28, 28, None),
+    >>>                    scale=1e-2, block_name='feat2')(x)
+
     """
-  def f(x, y):
-    x = Lambda(lambda xx: xx * scale)(x)  # First weighs the scale
-    x = Conv2D(filters=classes, kernel_size=(1,1))(x)   # Stride 1 conv layers,  
-                                                        # replacing the
-                                                        # traditional FC layer.
-    if y is None:   # First block has no y.
-      y = Conv2DTranspose(filters=classes, ...) # Deconvolutional layer or
-                                                # Upsampling Layer
-    else:
-      x = CroppingLike2D(target=y, offset='centered')(x) # Crop the upsampled
-                                                         # feature to match
-                                                         # the output of one
-                                                         # scale up.
-      y = add([y, x])
-      y = Conv2DTranspose(filters=classes, ...) # Deconv/Upsampling again.
-    return y  # return output of the current scale in the feature pyramid
-  return x
+    def f(x, y):
+        score = Conv2D(filters=classes, kernel_size=(1, 1),
+                       activation='linear',
+                       padding='valid',
+                       kernel_initializer='he_normal',
+                       name='score_{}'.format(block_name))(x)
+        if y is not None:
+            def scaling(xx, ss=1):
+                return xx * ss
+            scaled = Lambda(scaling, arguments={'ss': scale},
+                            name='scale_{}'.format(block_name))(score)
+            score = add([y, scaled])
+        upscore = BilinearUpSampling2D(
+            target_shape=target_shape,
+            name='upscore_{}'.format(block_name))(score)
+        return upscore
+    return f
+
 
 ```
 
