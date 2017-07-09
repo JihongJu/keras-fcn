@@ -1,4 +1,5 @@
 import keras
+import keras.backend as K
 
 from keras.models import Model
 from keras.layers import (
@@ -12,7 +13,8 @@ from keras.layers.convolutional import (
 from keras_fcn.layers import CroppingLike2D
 from keras_fcn.blocks import (
     vgg_deconv,
-    vgg_score
+    vgg_score,
+    vgg_upsampling
 )
 
 
@@ -75,3 +77,20 @@ def VGGDecoder(pyramid, scales, classes):
     blocks.append(vgg_score(crop_offset='centered'))
 
     return Decoder(pyramid=pyramid, blocks=blocks)
+
+
+def VGGUpsampler(pyramid, scales, classes):
+    if len(scales) != len(pyramid) - 1:
+        raise ValueError('`scales` needs to match the length of'
+                         '`pyramid` - 1.')
+    blocks = []
+
+    for i in range(len(pyramid) - 1):
+        block_name = 'feat{}'.format(i + 1)
+        block = vgg_upsampling(classes=classes,
+                               target_shape=K.int_shape(pyramid[i + 1]),
+                               scale=scales[i],
+                               block_name=block_name)
+        blocks.append(block)
+
+    return Decoder(pyramid=pyramid[:-1], blocks=blocks)

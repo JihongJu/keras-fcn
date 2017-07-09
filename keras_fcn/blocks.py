@@ -10,7 +10,8 @@ from keras.layers.convolutional import (
     ZeroPadding2D
 )
 from keras.layers.merge import add
-from keras_fcn.layers import CroppingLike2D
+from keras_fcn.layers import CroppingLike2D, BilinearUpSampling2D
+
 
 def vgg_conv(filters, convs, block_name='blockx'):
     """A VGG convolutional block for encoding.
@@ -24,20 +25,21 @@ def vgg_conv(filters, convs, block_name='blockx'):
 
     """
     def f(x):
+        print('x', x.get_shape())
         for i in range(convs):
             if block_name == 'block1' and i == 0:
-                pad = ZeroPadding2D(padding=(100, 100))(x)
-                x = Conv2D(filters, (3, 3), activation='relu', padding='valid',
+                # pad = ZeroPadding2D(padding=(100, 100))(x)
+                x = Conv2D(filters, (3, 3), activation='relu', padding='same',
                            kernel_initializer='he_normal',
-                           name='{}_conv{}'.format(block_name, int(i + 1)))(pad)
+                           name='{}_conv{}'.format(block_name, int(i + 1)))(x)
             else:
                 x = Conv2D(filters, (3, 3), activation='relu', padding='same',
                            kernel_initializer='he_normal',
                            name='{}_conv{}'.format(block_name, int(i + 1)))(x)
 
         pool = MaxPooling2D((2, 2), strides=(2, 2), padding='same',
-                         name='{}_pool'.format(block_name))(x)
-        print(pool.get_shape())
+                            name='{}_pool'.format(block_name))(x)
+        print('pool', pool.get_shape())
         return pool
     return f
 
@@ -53,12 +55,13 @@ def vgg_fc(filters, block_name='block5'):
     """
     def f(x):
         fc6 = Conv2D(filters=4096, kernel_size=(7, 7),
-                     activation='relu', padding='valid',
+                     activation='relu', padding='same',
+                     dilation_rate=(2, 2),
                      kernel_initializer='he_normal',
                      name='{}_fc6'.format(block_name))(x)
         drop6 = Dropout(0.5)(fc6)
         fc7 = Conv2D(filters=4096, kernel_size=(1, 1),
-                     activation='relu', padding='valid',
+                     activation='relu', padding='same',
                      kernel_initializer='he_normal',
                      name='{}_fc7'.format(block_name))(drop6)
         drop7 = Dropout(0.5)(fc7)
@@ -82,28 +85,50 @@ def vgg_deconv(classes, scale=1, kernel_size=(4, 4), strides=(2, 2),
 
     """
     def f(x, y):
-        #def scaling(x, scale=1):
+        # def scaling(x, scale=1):
         #    return x * 0.5
-        #s = Lambda(scaling, arguments={'scale': scale},
+        # s = Lambda(scaling, arguments={'scale': scale},
         #           name='scale_{}'.format(block_name))(x)
-        score = Conv2D(filters=classes, kernel_size=(1, 1),
-                   kernel_initializer='he_normal',
-                   name='score_{}'.format(block_name))(x)
+        score = Conv2D(filters=classes, kernel_size=(1, 1), activation='linear',
+                       kernel_initializer='he_normal',
+                       name='score_{}'.format(block_name))(x)
         if y is None:
             upscore = Conv2DTranspose(filters=classes, kernel_size=kernel_size,
-                                strides=strides, padding='valid',
-                                kernel_initializer='he_normal',
-                                use_bias=False,
-                                name='upscore_{}'.format(block_name))(score)
+                                      strides=strides, padding='valid',
+                                      kernel_initializer='he_normal',
+                                      use_bias=False,
+                                      name='upscore_{}'.format(block_name))(score)
         else:
             crop = CroppingLike2D(target_shape=K.int_shape(y), offset=crop_offset,
-                               name='crop_{}'.format(block_name))(score)
+                                  name='crop_{}'.format(block_name))(score)
             merge = add([y, crop])
             upscore = Conv2DTranspose(filters=classes, kernel_size=kernel_size,
-                                strides=strides, padding='valid',
-                                kernel_initializer='he_normal',
-                                use_bias=False,
-                                name='upscore_{}'.format(block_name))(merge)
+                                      strides=strides, padding='valid',
+                                      kernel_initializer='he_normal',
+                                      use_bias=False,
+                                      name='upscore_{}'.format(block_name))(merge)
+        return upscore
+    return f
+
+
+def vgg_upsampling(classes, target_shape=None, scale=1, block_name='featx'):
+    def f(x, y):
+        print('feat', x.get_shape())
+        score = Conv2D(filters=classes, kernel_size=(1, 1),
+                       activation='linear',
+                       padding='valid',
+                       kernel_initializer='he_normal',
+                       name='score_{}'.format(block_name))(x)
+        print('target_shape', target_shape)
+        print('score', score.get_shape())
+        if y is not None:
+            def scaling(xx, ss=1):
+                return xx * ss
+            scaled = Lambda(scaling, arguments={'ss': scale},
+                            name='scale_{}'.format(block_name))(score)
+            score = add([y, scaled])
+        upscore = BilinearUpSampling2D(target_shape=target_shape)(score)
+        print('upscore', upscore.get_shape())
         return upscore
     return f
 
@@ -119,6 +144,7 @@ def vgg_score(crop_offset='centered'):
 
     """
     def f(x, y):
-        score = CroppingLike2D(target_shape=K.int_shape(x), offset=crop_offset, name='score')(y)
+        score = CroppingLike2D(target_shape=K.int_shape(
+            x), offset=crop_offset, name='score')(y)
         return score
     return f
