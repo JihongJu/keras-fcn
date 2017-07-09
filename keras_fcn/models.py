@@ -3,11 +3,11 @@ from __future__ import (
     absolute_import,
     unicode_literals
 )
-
+import keras
 import tensorflow as tf
 import keras.backend as K
 from keras.models import Model
-from keras.layers import Input, Flatten, Reshape
+from keras.layers import Input, Flatten, Activation, Reshape
 
 
 from keras_fcn.encoders import VGG16, VGG19
@@ -61,10 +61,14 @@ def FCN_VGG16(input_shape, classes,
     outputs = VGGUpsampler(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=21)
 
     # Flatten
+    # if K.image_data_format() == 'channels_last':
+    #     scores = keras.activations.softmax(outputs, axis=-1)
+    # else:
+    #     scores = keras.activations.softmax(outputs, axis=1)
     #outputs = Reshape((-1, classes), name='flatten_score')(outputs)
-
+    scores = Activation('softmax')(outputs)
     # return model
-    return Model(inputs=inputs, outputs=outputs)
+    return Model(inputs=inputs, outputs=scores)
 
 
 def FCN_VGG19(input_shape, classes,
