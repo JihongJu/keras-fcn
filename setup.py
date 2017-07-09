@@ -7,6 +7,7 @@ setuptools.setup(
     author_email="daniel.jihong.ju@gmail.com",
     extras_require={
         "test": [
+            'keras>=2.0.0',
             "pandas==0.19.2",
             "tensorflow",
             "codecov",
@@ -19,9 +20,7 @@ setuptools.setup(
             "graphviz"
         ],
     },
-    install_requires=[
-        'keras>=2.0.0'
-    ],
+    install_requires=[],
     name="keras-fcn",
     description=("A reimplemtenation of fully convolutional networks"),
     packages=['keras_fcn'],
