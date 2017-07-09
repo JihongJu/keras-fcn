@@ -29,5 +29,5 @@ class CheckNumericsOps(Callback):
                     layer_out = functor(self.validation_data)
                     if np.any(np.isnan(layer_out)) or np.any(np.isinf(layer_out)):
                         print('The output of {} becomes nan'.format(layer.name))
-                self.model.stop_training = True
+                        self.model.stop_training = True
 

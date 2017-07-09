@@ -51,7 +51,7 @@ csv_logger = CSVLogger(
     #'output/{}_fcn_vgg16.csv'.format(datetime.datetime.now().isoformat()))
     'output/tmp_fcn_vgg16.csv')
 check_num = CheckNumericsOps(validation_data=[np.random.random((1, 224, 224, 3)), 1],
-                             histogram_freq=20)
+                             histogram_freq=100)
 
 
 
@@ -74,14 +74,13 @@ val_loader = ImageSetLoader(**init_args['image_set_loader']['val'])
 
 fcn_vgg16 = FCN(input_shape=(224, 224, 3), classes=21,
                 weights=None, trainable_encoder=True)
-optimizer = keras.optimizers.Adam(1e-4)
+optimizer = keras.optimizers.Adam(1e-8)
 
 fcn_vgg16.compile(optimizer=optimizer,
                   #loss=mean_categorical_crossentropy,
                   #loss=flatten_categorical_crossentropy(classes=21),
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
-
 
 fcn_vgg16.fit_generator(
     train_generator.flow_from_imageset(

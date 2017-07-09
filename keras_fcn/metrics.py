@@ -19,7 +19,6 @@ def _initialize_variables():
         if not hasattr(v, '_keras_initialized') or not v._keras_initialized:
             uninitialized_variables.append(v)
             v._keras_initialized = True
-    print(uninitialized_variables)
     if uninitialized_variables:
         sess = K.get_session()
         sess.run(tf.variables_initializer(uninitialized_variables))

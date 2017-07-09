@@ -13,6 +13,7 @@ class BilinearUpSampling2D(Layer):
             'channels_last', 'channels_first'}
         self.data_format = data_format
         self.input_spec = [InputSpec(ndim=4)]
+	self.target_shape = target_shape
         if self.data_format == 'channels_first':
             self.target_size = (target_shape[2], target_shape[3])
         elif self.data_format == 'channels_last':
