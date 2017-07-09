@@ -47,9 +47,6 @@ install:
   # intall keras
   - pip install keras
 
-  # install test tools
-  - pip install -r requirements.txt
-
 # command to run tests
 script:
   # run keras backend init to initialize backend config
