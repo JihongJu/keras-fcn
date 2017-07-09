@@ -31,31 +31,31 @@ def test_fcn_vgg16_shape():
 
     for l in fcn_vgg16.layers:
         if l.name == 'block1_pool':
-            test_shape = (None, 349, 349, 64)
+            test_shape = (None, 250, 250, 64)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'block2_pool':
-            test_shape = (None, 175, 175, 128)
+            test_shape = (None, 125, 125, 128)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'block3_pool':
-            test_shape = (None, 88, 88, 256)
+            test_shape = (None, 63, 63, 256)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'block4_pool':
-            test_shape = (None, 44, 44, 512)
+            test_shape = (None, 32, 32, 512)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'block5_pool':
-            test_shape = (None, 22, 22, 512)
+            test_shape = (None, 16, 16, 512)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'dropout_2':
             test_shape = (None, 16, 16, 4096)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'upscore_feat1':
-            test_shape = (None, 34, 34, 21)
+            test_shape = (None, 32, 32, 21)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'upscore_feat2':
-            test_shape = (None, 70, 70, 21)
+            test_shape = (None, 63, 63, 21)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'upscore_feat3':
-            test_shape = (None, 568, 568, 21)
+            test_shape = (None, 500, 500, 21)
             assert is_same_shape(l.output_shape, test_shape)
         elif l.name == 'score':
             test_shape = (None, 500, 500, 21)

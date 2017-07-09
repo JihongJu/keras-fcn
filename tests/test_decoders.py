@@ -4,7 +4,8 @@ import keras.backend as K
 from keras.layers import Input
 from keras_fcn.decoders import (
     Decoder,
-    VGGDecoder
+    VGGDecoder,
+    VGGUpsampler
 )
 
 from keras.utils.test_utils import keras_test
@@ -31,4 +32,23 @@ def test_vgg_decoder():
     pyramid = [drop7, pool4, pool3, inputs]
     scales = [1., 1e-2, 1e-4]
     score = VGGDecoder(pyramid, scales, classes=21)
+    assert K.int_shape(score) == score_shape
+
+
+def test_vgg_upsampler():
+    if K.image_data_format() == 'channels_last':
+        inputs = Input(shape=(500, 500, 3))
+        pool3 = Input(shape=(63, 63, 256))
+        pool4 = Input(shape=(32, 32, 512))
+        drop7 = Input(shape=(16, 16, 4096))
+        score_shape = (None, 500, 500, 21)
+    else:
+        inputs = Input(shape=(3, 500, 500))
+        pool3 = Input(shape=(256, 63, 63))
+        pool4 = Input(shape=(512, 32, 32))
+        drop7 = Input(shape=(4096, 16, 16))
+        score_shape = (None, 21, 500, 500)
+    pyramid = [drop7, pool4, pool3, inputs]
+    scales = [1., 1e-2, 1e-4]
+    score = VGGUpsampler(pyramid, scales, classes=21)
     assert K.int_shape(score) == score_shape

@@ -25,10 +25,8 @@ def vgg_conv(filters, convs, block_name='blockx'):
 
     """
     def f(x):
-        print('x', x.get_shape())
         for i in range(convs):
             if block_name == 'block1' and i == 0:
-                # pad = ZeroPadding2D(padding=(100, 100))(x)
                 x = Conv2D(filters, (3, 3), activation='relu', padding='same',
                            kernel_initializer='he_normal',
                            name='{}_conv{}'.format(block_name, int(i + 1)))(x)
@@ -39,7 +37,6 @@ def vgg_conv(filters, convs, block_name='blockx'):
 
         pool = MaxPooling2D((2, 2), strides=(2, 2), padding='same',
                             name='{}_pool'.format(block_name))(x)
-        print('pool', pool.get_shape())
         return pool
     return f
 
@@ -127,7 +124,9 @@ def vgg_upsampling(classes, target_shape=None, scale=1, block_name='featx'):
             scaled = Lambda(scaling, arguments={'ss': scale},
                             name='scale_{}'.format(block_name))(score)
             score = add([y, scaled])
-        upscore = BilinearUpSampling2D(target_shape=target_shape)(score)
+        upscore = BilinearUpSampling2D(
+            target_shape=target_shape,
+            name='upscore_{}'.format(block_name))(score)
         print('upscore', upscore.get_shape())
         return upscore
     return f

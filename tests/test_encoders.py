@@ -14,18 +14,18 @@ def test_vgg16():
         K.set_image_data_format(data_format)
         if K.image_data_format() == 'channels_first':
             x = Input(shape=(3, 500, 500))
-            pool1_shape = (None, 64, 349, 349)
-            pool2_shape = (None, 128, 175, 175)
-            pool3_shape = (None, 256, 88, 88)
-            pool4_shape = (None, 512, 44, 44)
+            pool1_shape = (None, 64, 250, 250)
+            pool2_shape = (None, 128, 125, 125)
+            pool3_shape = (None, 256, 63, 63)
+            pool4_shape = (None, 512, 32, 32)
             drop7_shape = (None, 4096, 16, 16)
             conv1_weight = -0.35009676
         else:
             x = Input(shape=(500, 500, 3))
-            pool1_shape = (None, 349, 349, 64)
-            pool2_shape = (None, 175, 175, 128)
-            pool3_shape = (None, 88, 88, 256)
-            pool4_shape = (None, 44, 44, 512)
+            pool1_shape = (None, 250, 250, 64)
+            pool2_shape = (None, 125, 125, 128)
+            pool3_shape = (None, 63, 63, 256)
+            pool4_shape = (None, 32, 32, 512)
             drop7_shape = (None, 16, 16, 4096)
             conv1_weight = 0.429471
 
@@ -51,7 +51,7 @@ def test_vgg16():
             if layer.name == 'block1_conv1':
                 assert layer.trainable is True
                 weights = K.eval(layer.weights[0])
-                assert weights[0, 0, 0, 0] < 0.1
+                assert not np.allclose(weights[0, 0, 0, 0], conv1_weight)
 
 
 @keras_test
@@ -60,18 +60,18 @@ def test_vgg19():
         K.set_image_data_format(data_format)
         if K.image_data_format() == 'channels_first':
             x = Input(shape=(3, 500, 500))
-            pool1_shape = (None, 64, 349, 349)
-            pool2_shape = (None, 128, 175, 175)
-            pool3_shape = (None, 256, 88, 88)
-            pool4_shape = (None, 512, 44, 44)
+            pool1_shape = (None, 64, 250, 250)
+            pool2_shape = (None, 128, 125, 125)
+            pool3_shape = (None, 256, 63, 63)
+            pool4_shape = (None, 512, 32, 32)
             drop7_shape = (None, 4096, 16, 16)
             conv1_weight = -0.35009676
         else:
             x = Input(shape=(500, 500, 3))
-            pool1_shape = (None, 349, 349, 64)
-            pool2_shape = (None, 175, 175, 128)
-            pool3_shape = (None, 88, 88, 256)
-            pool4_shape = (None, 44, 44, 512)
+            pool1_shape = (None, 250, 250, 64)
+            pool2_shape = (None, 125, 125, 128)
+            pool3_shape = (None, 63, 63, 256)
+            pool4_shape = (None, 32, 32, 512)
             drop7_shape = (None, 16, 16, 4096)
             conv1_weight = 0.429471
 
@@ -97,4 +97,4 @@ def test_vgg19():
             if layer.name == 'block1_conv1':
                 assert layer.trainable is True
                 weights = K.eval(layer.weights[0])
-                assert weights[0, 0, 0, 0] < 0.1
+                assert not np.allclose(weights[0, 0, 0, 0], conv1_weight)
