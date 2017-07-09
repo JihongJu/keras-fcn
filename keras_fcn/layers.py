@@ -6,6 +6,8 @@ from keras.engine import InputSpec
 
 
 class BilinearUpSampling2D(Layer):
+    """Upsampling2D with bilinear interpolation."""
+
     def __init__(self, target_shape=None, data_format=None, **kwargs):
         if data_format is None:
             data_format = K.image_data_format()
@@ -13,7 +15,7 @@ class BilinearUpSampling2D(Layer):
             'channels_last', 'channels_first'}
         self.data_format = data_format
         self.input_spec = [InputSpec(ndim=4)]
-	self.target_shape = target_shape
+        self.target_shape = target_shape
         if self.data_format == 'channels_first':
             self.target_size = (target_shape[2], target_shape[3])
         elif self.data_format == 'channels_last':
