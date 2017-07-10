@@ -110,7 +110,8 @@ class VGGEncoder(Encoder):
         # Convolutional blocks
         for i, (fltr, conv) in enumerate(zip(filters, convs)):
             block_name = 'block{}'.format(i + 1)
-            block = vgg_conv(filters=fltr, convs=conv,
+            block = vgg_conv(filters=fltr, convs=conv, padding=False,
+                             weight_decay=1e-4,
                              block_name=block_name)
             blocks.append(block)
 

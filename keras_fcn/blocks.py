@@ -10,10 +10,11 @@ from keras.layers.convolutional import (
     ZeroPadding2D
 )
 from keras.layers.merge import add
+from keras.regularizers import l2
 from keras_fcn.layers import CroppingLike2D, BilinearUpSampling2D
 
 
-def vgg_conv(filters, convs, padding=False, block_name='blockx'):
+def vgg_conv(filters, convs, padding=False, weight_decay=0., block_name='blockx'):
     """A VGG convolutional block for encoding.
 
     :param filters: Integer, number of filters per conv layer
@@ -31,10 +32,12 @@ def vgg_conv(filters, convs, padding=False, block_name='blockx'):
                     x = ZeroPadding2D(padding=(100, 100))(x)
                 x = Conv2D(filters, (3, 3), activation='relu', padding='same',
                            kernel_initializer='he_normal',
+                           kernel_regularizer=l2(weight_decay),
                            name='{}_conv{}'.format(block_name, int(i + 1)))(x)
             else:
                 x = Conv2D(filters, (3, 3), activation='relu', padding='same',
                            kernel_initializer='he_normal',
+                           kernel_regularizer=l2(weight_decay),
                            name='{}_conv{}'.format(block_name, int(i + 1)))(x)
 
         pool = MaxPooling2D((2, 2), strides=(2, 2), padding='same',
@@ -43,7 +46,7 @@ def vgg_conv(filters, convs, padding=False, block_name='blockx'):
     return f
 
 
-def vgg_fc(filters, block_name='block5'):
+def vgg_fc(filters, weight_decay=0., block_name='block5'):
     """A fully convolutional block for encoding.
 
     :param filters: Integer, number of filters per fc layer
@@ -57,11 +60,13 @@ def vgg_fc(filters, block_name='block5'):
                      activation='relu', padding='same',
                      dilation_rate=(2, 2),
                      kernel_initializer='he_normal',
+                     kernel_regularizer=l2(weight_decay),
                      name='{}_fc6'.format(block_name))(x)
         drop6 = Dropout(0.5)(fc6)
         fc7 = Conv2D(filters=4096, kernel_size=(1, 1),
                      activation='relu', padding='same',
                      kernel_initializer='he_normal',
+                     kernel_regularizer=l2(weight_decay),
                      name='{}_fc7'.format(block_name))(drop6)
         drop7 = Dropout(0.5)(fc7)
         return drop7
@@ -69,7 +74,7 @@ def vgg_fc(filters, block_name='block5'):
 
 
 def vgg_deconv(classes, scale=1, kernel_size=(4, 4), strides=(2, 2),
-               crop_offset='centered', block_name='featx'):
+               crop_offset='centered', weight_decay=0., block_name='featx'):
     """A VGG convolutional transpose block for decoding.
 
     :param classes: Integer, number of classes
@@ -91,11 +96,13 @@ def vgg_deconv(classes, scale=1, kernel_size=(4, 4), strides=(2, 2),
         score = Conv2D(filters=classes, kernel_size=(1, 1),
                        activation='linear',
                        kernel_initializer='he_normal',
+                       kernel_regularizer=l2(weight_decay),
                        name='score_{}'.format(block_name))(scaled)
         if y is None:
             upscore = Conv2DTranspose(filters=classes, kernel_size=kernel_size,
                                       strides=strides, padding='valid',
                                       kernel_initializer='he_normal',
+                                      kernel_regularizer=l2(weight_decay),
                                       use_bias=False,
                                       name='upscore_{}'.format(block_name))(score)
         else:
@@ -106,13 +113,14 @@ def vgg_deconv(classes, scale=1, kernel_size=(4, 4), strides=(2, 2),
             upscore = Conv2DTranspose(filters=classes, kernel_size=kernel_size,
                                       strides=strides, padding='valid',
                                       kernel_initializer='he_normal',
+                                      kernel_regularizer=l2(weight_decay),
                                       use_bias=False,
                                       name='upscore_{}'.format(block_name))(merge)
         return upscore
     return f
 
 
-def vgg_upsampling(classes, target_shape=None, scale=1, block_name='featx'):
+def vgg_upsampling(classes, target_shape=None, scale=1, weight_decay=0., block_name='featx'):
     """A VGG convolutional block with bilinear upsampling for decoding.
 
     :param classes: Integer, number of classes
@@ -136,6 +144,7 @@ def vgg_upsampling(classes, target_shape=None, scale=1, block_name='featx'):
                        activation='linear',
                        padding='valid',
                        kernel_initializer='he_normal',
+                       kernel_regularizer=l2(weight_decay),
                        name='score_{}'.format(block_name))(x)
         if y is not None:
             def scaling(xx, ss=1):
