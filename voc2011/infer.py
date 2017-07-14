@@ -1,4 +1,5 @@
 import numpy as np
+import keras
 import keras.backend as K
 from keras.models import load_model
 from voc_generator import PascalVocGenerator, ImageSetLoader
@@ -37,7 +38,7 @@ for fn in dataload.filenames[:10]:
 
     y_pred = model.predict(X)
     print(np.unique(y_true), np.unique(y_pred))
-    loss = K.losses.categorical_crossentropy(K.variable(y_true), K.variable(y_pred))
+    loss = keras.losses.categorical_crossentropy(K.variable(y_true), K.variable(y_pred))
     print(y_true.shape, y_pred.shape)
     print(result, K.eval(loss))
 
@@ -46,4 +47,3 @@ for fn in dataload.filenames[:10]:
     pred = np.squeeze(pred, axis=0)
     print(np.unique(label), np.unique(pred))
     print(np.size(label), np.sum(label != 0))
-    dataload.save(x, pred, fn)
