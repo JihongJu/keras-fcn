@@ -111,12 +111,12 @@ class VGGEncoder(Encoder):
         for i, (fltr, conv) in enumerate(zip(filters, convs)):
             block_name = 'block{}'.format(i + 1)
             block = vgg_conv(filters=fltr, convs=conv, padding=False,
-                             weight_decay=1e-4,
+                             weight_decay=1e-3,
                              block_name=block_name)
             blocks.append(block)
 
         # Fully Convolutional block
-        fc_block = vgg_fc(filters=4096)
+        fc_block = vgg_fc(filters=4096, weight_decay=1e-3)
         blocks.append(fc_block)
 
         super(VGGEncoder, self).__init__(inputs=inputs, blocks=blocks,

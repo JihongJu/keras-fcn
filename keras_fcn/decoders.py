@@ -65,11 +65,13 @@ def VGGDecoder(pyramid, scales, classes):
             block = vgg_deconv(classes=classes, scale=scales[i],
                                kernel_size=(4, 4), strides=(2, 2),
                                crop_offset='centered',
+                               weight_decay=1e-3,
                                block_name=block_name)
         else:
             block = vgg_deconv(classes=classes, scale=scales[i],
                                kernel_size=(16, 16), strides=(8, 8),
                                crop_offset='centered',
+                               weight_decay=1e-3,
                                block_name=block_name)
         blocks.append(block)
 
@@ -99,7 +101,7 @@ def VGGUpsampler(pyramid, scales, classes):
         block = vgg_upsampling(classes=classes,
                                target_shape=K.int_shape(pyramid[i + 1]),
                                scale=scales[i],
-                               weight_decay=1e-4,
+                               weight_decay=1e-3,
                                block_name=block_name)
         blocks.append(block)
 

@@ -2,10 +2,7 @@ import numpy as np
 import keras.backend as K
 from keras.models import load_model
 from voc_generator import PascalVocGenerator, ImageSetLoader
-from keras_fcn.layers import CroppingLike2D
-from keras_fcn.losses import (
-        mean_categorical_crossentropy,
-        flatten_categorical_crossentropy)
+from keras_fcn.layers import BilinearUpSampling2D
 
 import yaml
 with open("init_args.yml", 'r') as stream:
@@ -23,9 +20,7 @@ datagen = PascalVocGenerator(image_shape=[224, 224, 3],
 dataload = ImageSetLoader(**init_args['image_set_loader']['train'])
 
 model = load_model('/tmp/fcn_vgg16_weights.h5',
-        custom_objects={'CroppingLike2D': CroppingLike2D,
-            #'mean_categorical_crossentropy': mean_categorical_crossentropy})
-            'flatten_categorical_crossentropy': flatten_categorical_crossentropy(classes=21)})
+        custom_objects={'BilinearUpSampling2D': BilinearUpSampling2D})
 print(model.summary())
 
 
@@ -42,7 +37,7 @@ for fn in dataload.filenames[:10]:
 
     y_pred = model.predict(X)
     print(np.unique(y_true), np.unique(y_pred))
-    loss = mean_categorical_crossentropy(K.variable(y_true), K.variable(y_pred))
+    loss = K.losses.categorical_crossentropy(K.variable(y_true), K.variable(y_pred))
     print(y_true.shape, y_pred.shape)
     print(result, K.eval(loss))
 
