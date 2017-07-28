@@ -60,7 +60,7 @@ datagen = PascalVocGenerator(image_shape=[224, 224, 3],
 train_loader = ImageSetLoader(**init_args['image_set_loader']['train'])
 val_loader = ImageSetLoader(**init_args['image_set_loader']['val'])
 
-fcn_vgg16 = FCN(input_shape=(224, 224, 3), classes=21,
+fcn_vgg16 = FCN(input_shape=(224, 224, 3), classes=21, weight_decay=1e-3,
                 weights='imagenet', trainable_encoder=True)
 optimizer = keras.optimizers.Adam(1e-4)
 

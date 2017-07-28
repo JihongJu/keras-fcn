@@ -29,7 +29,7 @@ def FCN(*args, **kwargs):
     return FCN_VGG16(*args, **kwargs)
 
 
-def FCN_VGG16(input_shape, classes,
+def FCN_VGG16(input_shape, classes, weight_decay=0.,
               trainable_encoder=True, weights=None):
     """Fully Convolutional Networks for semantic segmentation with VGG16.
 
@@ -50,14 +50,15 @@ def FCN_VGG16(input_shape, classes,
 
     # Get the feature pyramid [drop7, pool4, pool3] from the VGG16 encoder
     pyramid_layers = 3
-    encoder = VGG16(inputs, weights=weights, trainable=trainable_encoder)
+    encoder = VGG16(inputs, weight_decay=weight_decay,
+                    weights=weights, trainable=trainable_encoder)
     feat_pyramid = encoder.outputs[:pyramid_layers]
 
     # Append image to the end of feature pyramid
     feat_pyramid.append(inputs)
 
     # Decode feature pyramid
-    outputs = VGGUpsampler(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=classes)
+    outputs = VGGUpsampler(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=classes, weight_decay=weight_decay)
 
     # Activation TODO{jihong} work only for channels_last
     scores = Activation('softmax')(outputs)
@@ -66,7 +67,7 @@ def FCN_VGG16(input_shape, classes,
     return Model(inputs=inputs, outputs=scores)
 
 
-def FCN_VGG19(input_shape, classes,
+def FCN_VGG19(input_shape, classes, weight_decay=0,
               trainable_encoder=True, weights='imagenet'):
     """Fully Convolutional Networks for semantic segmentation with VGG16.
 
@@ -87,14 +88,15 @@ def FCN_VGG19(input_shape, classes,
 
     # Get the feature pyramid [drop7, pool4, pool3] from the VGG16 encoder
     pyramid_layers = 3
-    encoder = VGG19(inputs, weights='imagenet', trainable=trainable_encoder)
+    encoder = VGG19(inputs, weight_decay=weight_decay,
+                    weights='imagenet', trainable=trainable_encoder)
     feat_pyramid = encoder.outputs[:pyramid_layers]
 
     # Append image to the end of feature pyramid
     feat_pyramid.append(inputs)
 
     # Decode feature pyramid
-    outputs = VGGUpsampler(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=classes)
+    outputs = VGGUpsampler(feat_pyramid, scales=[1, 1e-2, 1e-4], classes=classes, weight_decay=weight_decay)
 
     # Activation TODO{jihong} work only for channels_last
     outputs = Activation('softmax')(outputs)

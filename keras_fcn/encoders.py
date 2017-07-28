@@ -104,19 +104,20 @@ class VGGEncoder(Encoder):
 
     """
 
-    def __init__(self, inputs, filters, convs, weights=None, trainable=True):
+    def __init__(self, inputs, filters, convs, weight_decay=0.,
+            weights=None, trainable=True):
         blocks = []
 
         # Convolutional blocks
         for i, (fltr, conv) in enumerate(zip(filters, convs)):
             block_name = 'block{}'.format(i + 1)
             block = vgg_conv(filters=fltr, convs=conv, padding=False,
-                             weight_decay=1e-3,
+                             weight_decay=weight_decay,
                              block_name=block_name)
             blocks.append(block)
 
         # Fully Convolutional block
-        fc_block = vgg_fc(filters=4096, weight_decay=1e-3)
+        fc_block = vgg_fc(filters=4096, weight_decay=weight_decay)
         blocks.append(fc_block)
 
         super(VGGEncoder, self).__init__(inputs=inputs, blocks=blocks,
@@ -134,7 +135,8 @@ class VGG16(VGGEncoder):
 
     """
 
-    def __init__(self, inputs, weights='imagenet', trainable=True):
+    def __init__(self, inputs, weight_decay=0.,
+            weights='imagenet', trainable=True):
         if weights == 'imagenet':
             weights = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg16_weights_tf_dim_ordering_tf_kernels_notop.h5'
         else:
@@ -143,6 +145,7 @@ class VGG16(VGGEncoder):
         super(VGG16, self).__init__(inputs,
                                     filters=[64, 128, 256, 512, 512],
                                     convs=[2, 2, 3, 3, 3],
+                                    weight_decay=weight_decay,
                                     weights=weights,
                                     trainable=trainable)
 
@@ -158,7 +161,8 @@ class VGG19(VGGEncoder):
 
     """
 
-    def __init__(self, inputs, weights='imagenet', trainable=True):
+    def __init__(self, inputs, weight_decay=0.,
+            weights='imagenet', trainable=True):
         if weights == 'imagenet':
             weights = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.1/vgg19_weights_tf_dim_ordering_tf_kernels_notop.h5'
         else:
@@ -167,5 +171,6 @@ class VGG19(VGGEncoder):
         super(VGG19, self).__init__(inputs,
                                     filters=[64, 128, 256, 512, 512],
                                     convs=[2, 2, 4, 4, 4],
+                                    weight_decay=weight_decay,
                                     weights=weights,
                                     trainable=trainable)

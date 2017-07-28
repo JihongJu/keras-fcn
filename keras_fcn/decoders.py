@@ -81,7 +81,7 @@ def VGGDecoder(pyramid, scales, classes):
     return Decoder(pyramid=pyramid, blocks=blocks)
 
 
-def VGGUpsampler(pyramid, scales, classes):
+def VGGUpsampler(pyramid, scales, classes, weight_decay=0.):
     """A Functional upsampler for the VGG Nets.
 
     :param: pyramid: A list of features in pyramid, scaling from large
@@ -101,7 +101,7 @@ def VGGUpsampler(pyramid, scales, classes):
         block = vgg_upsampling(classes=classes,
                                target_shape=K.int_shape(pyramid[i + 1]),
                                scale=scales[i],
-                               weight_decay=1e-3,
+                               weight_decay=weight_decay,
                                block_name=block_name)
         blocks.append(block)
 
